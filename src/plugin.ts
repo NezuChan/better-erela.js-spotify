@@ -34,6 +34,7 @@ export class Spotify extends Plugin {
         playlist: this.resolver.getPlaylist.bind(this),
         artist: this.resolver.getArtist.bind(this)
     };
+    
     public manager: Manager | undefined;
     public constructor(options: SpotifyOptions) {
         super();

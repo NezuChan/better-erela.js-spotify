@@ -12,7 +12,8 @@ export default class resolver {
     public async getPlaylist(id: string) {
         const tracks = await getTracks(id);
         const metaData = await getData(id)
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
+        //@ts-expect-error no typings
+        const unresolvedAlbumTracks = tracks.map(track => track.track && resolver.buildUnresolved(track)) ?? [];
         return { tracks: unresolvedAlbumTracks, name: metaData.name }
     }
 
