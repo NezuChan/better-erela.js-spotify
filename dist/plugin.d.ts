@@ -6,7 +6,7 @@ export declare class Spotify extends Plugin {
     private _search;
     private readonly functions;
     manager: Manager | undefined;
-    constructor(options: SpotifyOptions);
+    constructor(options?: SpotifyOptions);
     load(manager: Manager): void;
     private search;
 }

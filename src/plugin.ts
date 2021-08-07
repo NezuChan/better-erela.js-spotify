@@ -36,7 +36,7 @@ export class Spotify extends Plugin {
     };
     
     public manager: Manager | undefined;
-    public constructor(options: SpotifyOptions) {
+    public constructor(options?: SpotifyOptions) {
         super();
         check(options);
         this.options = {
