@@ -8,8 +8,8 @@ const erela_js_1 = require("erela.js");
 const resolver_1 = __importDefault(require("./resolver"));
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|album)[\/:]([A-Za-z0-9]+)/;
 const check = (options) => {
-    if (typeof options.convertUnresolved !== "undefined" &&
-        typeof options.convertUnresolved !== "boolean") {
+    if (typeof options?.convertUnresolved !== "undefined" &&
+        typeof options?.convertUnresolved !== "boolean") {
         throw new TypeError("Spotify option \"convertUnresolved\" must be a boolean.");
     }
 };

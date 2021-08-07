@@ -12,10 +12,10 @@ const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist
 
 
 
-const check = (options: SpotifyOptions) => {
+const check = (options?: SpotifyOptions) => {
     if (
-        typeof options.convertUnresolved !== "undefined" &&
-        typeof options.convertUnresolved !== "boolean"
+        typeof options?.convertUnresolved !== "undefined" &&
+        typeof options?.convertUnresolved !== "boolean"
     ) {
         throw new TypeError(
             "Spotify option \"convertUnresolved\" must be a boolean.",
