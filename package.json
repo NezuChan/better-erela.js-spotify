@@ -1,7 +1,7 @@
 {
   "name": "better-erela.js-spotify",
   "main": "dist",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "typings": "dist/typings/index.d.ts",
   "devDependencies": {
     "@types/node": "^16.4.10",
