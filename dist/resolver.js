@@ -10,7 +10,8 @@ class resolver {
     async getPlaylist(id) {
         const tracks = await spotify_url_info_1.getTracks(id);
         const metaData = await spotify_url_info_1.getData(id);
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
+        //@ts-expect-error no typings
+        const unresolvedAlbumTracks = tracks.map(track => track.track && resolver.buildUnresolved(track.track)) ?? [];
         return { tracks: unresolvedAlbumTracks, name: metaData.name };
     }
     async getAlbum(id) {
