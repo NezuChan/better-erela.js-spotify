@@ -13,7 +13,7 @@ export default class resolver {
         const tracks = await getTracks(id);
         const metaData = await getData(id)
         //@ts-expect-error no typings
-        const unresolvedAlbumTracks = tracks.map(track => track.track && resolver.buildUnresolved(track)) ?? [];
+        const unresolvedAlbumTracks = tracks.map(track => track.track && resolver.buildUnresolved(track.track)) ?? [];
         return { tracks: unresolvedAlbumTracks, name: metaData.name }
     }
 
