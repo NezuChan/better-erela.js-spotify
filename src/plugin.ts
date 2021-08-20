@@ -8,8 +8,7 @@ import {
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
 
-const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|album)[\/:]([A-Za-z0-9]+)/;
-
+const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
 
 
 const check = (options?: SpotifyOptions) => {
@@ -32,7 +31,9 @@ export class Spotify extends Plugin {
         track: this.resolver.getTrack.bind(this),
         album: this.resolver.getAlbum.bind(this),
         playlist: this.resolver.getPlaylist.bind(this),
-        artist: this.resolver.getArtist.bind(this)
+        artist: this.resolver.getArtist.bind(this),
+        show: this.resolver.getShow.bind(this),
+        episode: this.resolver.getEpisode.bind(this)
     };
     
     public manager: Manager | undefined;
@@ -61,7 +62,7 @@ export class Spotify extends Plugin {
                     const data: Result = await func(finalQuery);
 
                     const loadType = type === "track" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
-                    const name = [ "playlist", "album", 'artist' ].includes(type) ? data.name : null;
+                    const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
 
                     const tracks = data.tracks.map(query => {
                         const track = TrackUtils.buildUnresolved(query, requester);
@@ -79,7 +80,7 @@ export class Spotify extends Plugin {
                     //@ts-expect-error type mabok
                     return resolver.buildSearch(loadType, tracks, null, name);
                 }
-                const msg = "Incorrect type for Spotify URL, must be one of \"track\", \"album\", \"artist\" or \"playlist\".";
+                const msg = "Incorrect type for Spotify URL, must be one of \"track\", \"album\", \"artist\", \"show\", \"episode\" or \"playlist\".";
                 //@ts-expect-error type mabok
                 return resolver.buildSearch("LOAD_FAILED", [], msg, null);
             } catch (e) {
