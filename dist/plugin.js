@@ -60,7 +60,7 @@ class Spotify extends erela_js_1.Plugin {
                     //@ts-expect-error type mabok
                     return resolver_1.default.buildSearch(loadType, tracks, null, name);
                 }
-                const msg = "Incorrect type for Spotify URL, must be one of \"track\", \"album\", \"artist\" or \"playlist\".";
+                const msg = "Incorrect type for Spotify URL, must be one of \"track\", \"album\", \"artist\", \"show\", \"episode\" or \"playlist\".";
                 //@ts-expect-error type mabok
                 return resolver_1.default.buildSearch("LOAD_FAILED", [], msg, null);
             }

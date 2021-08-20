@@ -11,8 +11,15 @@ class resolver {
         const tracks = await spotify_url_info_1.getTracks(id);
         const metaData = await spotify_url_info_1.getData(id);
         //@ts-expect-error no typings
-        const unresolvedPlaylistTracks = tracks.map(track => track.track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedPlaylistTracks, name: metaData.name };
+        if (typeof tracks[0].track === "object") {
+            //@ts-expect-error no typings
+            const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver.buildUnresolved(track.track)) ?? [];
+            return { tracks: unresolvedPlaylistTracks, name: metaData.name };
+        }
+        else {
+            const unresolvedPlaylistTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+            return { tracks: unresolvedPlaylistTracks, name: metaData.name };
+        }
     }
     async getAlbum(id) {
         const tracks = await spotify_url_info_1.getTracks(id);

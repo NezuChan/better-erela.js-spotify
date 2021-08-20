@@ -10,7 +10,11 @@ export default class resolver {
         }[];
     }>;
     getPlaylist(id: string): Promise<{
-        tracks: any[];
+        tracks: {
+            title: string;
+            author: string;
+            duration: number;
+        }[];
         name: any;
     }>;
     getAlbum(id: string): Promise<{
