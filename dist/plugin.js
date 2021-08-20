@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Spotify = void 0;
 const erela_js_1 = require("erela.js");
 const resolver_1 = __importDefault(require("./resolver"));
-const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|album)[\/:]([A-Za-z0-9]+)/;
+const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
 const check = (options) => {
     if (typeof options?.convertUnresolved !== "undefined" &&
         typeof options?.convertUnresolved !== "boolean") {
@@ -21,7 +21,9 @@ class Spotify extends erela_js_1.Plugin {
             track: this.resolver.getTrack.bind(this),
             album: this.resolver.getAlbum.bind(this),
             playlist: this.resolver.getPlaylist.bind(this),
-            artist: this.resolver.getArtist.bind(this)
+            artist: this.resolver.getArtist.bind(this),
+            show: this.resolver.getShow.bind(this),
+            episode: this.resolver.getEpisode.bind(this)
         };
         check(options);
         this.options = {
@@ -42,7 +44,7 @@ class Spotify extends erela_js_1.Plugin {
                 if (func) {
                     const data = await func(finalQuery);
                     const loadType = type === "track" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
-                    const name = ["playlist", "album", 'artist'].includes(type) ? data.name : null;
+                    const name = ["playlist", "album", 'artist', 'episode', 'show'].includes(type) ? data.name : null;
                     const tracks = data.tracks.map(query => {
                         const track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
                         if (this.options.convertUnresolved) {

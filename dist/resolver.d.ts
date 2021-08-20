@@ -29,6 +29,21 @@ export default class resolver {
         }[];
         name: any;
     }>;
+    getShow(id: string): Promise<{
+        tracks: {
+            title: string;
+            author: string;
+            duration: number;
+        }[];
+        name: any;
+    }>;
+    getEpisode(id: string): Promise<{
+        tracks: {
+            title: string;
+            author: string;
+            duration: number;
+        }[];
+    }>;
     static buildUnresolved(track: Tracks): {
         title: string;
         author: string;

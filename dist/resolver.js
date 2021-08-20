@@ -4,15 +4,15 @@ const spotify_url_info_1 = require("spotify-url-info");
 class resolver {
     async getTrack(id) {
         const tracks = await spotify_url_info_1.getTracks(id);
-        const unresolvedAlbumTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks };
+        const unresolvedTrack = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+        return { tracks: unresolvedTrack };
     }
     async getPlaylist(id) {
         const tracks = await spotify_url_info_1.getTracks(id);
         const metaData = await spotify_url_info_1.getData(id);
         //@ts-expect-error no typings
-        const unresolvedAlbumTracks = tracks.map(track => track.track && resolver.buildUnresolved(track.track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name };
+        const unresolvedPlaylistTracks = tracks.map(track => track.track && resolver.buildUnresolved(track)) ?? [];
+        return { tracks: unresolvedPlaylistTracks, name: metaData.name };
     }
     async getAlbum(id) {
         const tracks = await spotify_url_info_1.getTracks(id);
@@ -25,6 +25,17 @@ class resolver {
         const metaData = await spotify_url_info_1.getData(id);
         const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
         return { tracks: unresolvedAlbumTracks, name: metaData.name };
+    }
+    async getShow(id) {
+        const tracks = await spotify_url_info_1.getTracks(id);
+        const metaData = await spotify_url_info_1.getData(id);
+        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
+        return { tracks: unresolvedAlbumTracks, name: metaData.name };
+    }
+    async getEpisode(id) {
+        const tracks = await spotify_url_info_1.getTracks(id);
+        const unresolvedTrack = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+        return { tracks: unresolvedTrack };
     }
     static buildUnresolved(track) {
         if (!track)
