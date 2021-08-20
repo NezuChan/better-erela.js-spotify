@@ -5,16 +5,16 @@ import { SearchResult } from "./typings";
 export default class resolver {
     public async getTrack(id: string) {
         const tracks = await getTracks(id);
-        const unresolvedAlbumTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks }
+        const unresolvedTrack = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+        return { tracks: unresolvedTrack }
     }
 
     public async getPlaylist(id: string) {
         const tracks = await getTracks(id);
         const metaData = await getData(id)
         //@ts-expect-error no typings
-        const unresolvedAlbumTracks = tracks.map(track => track.track && resolver.buildUnresolved(track.track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name }
+        const unresolvedPlaylistTracks = tracks.map(track => track.track && resolver.buildUnresolved(track)) ?? [];
+        return { tracks: unresolvedPlaylistTracks, name: metaData.name }
     }
 
     public async getAlbum(id: string) {
