@@ -12,6 +12,10 @@
   "author": {
     "name": "KagChi"
   },
+  "repository": {
+    "url": "https://github.com/NezuChan/better-erela.js-spotify"
+  },
+  "homepage": "https://better-erela.js-spotify.kagchi.my.id",
   "scripts": {
     "compile": "rimraf dist && tsc",
     "docs": "typedoc"
