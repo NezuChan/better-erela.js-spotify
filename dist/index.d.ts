@@ -1,2 +1,1 @@
-import { Spotify } from "./plugin";
-export = Spotify;
+export { Spotify as default } from "./plugin";
