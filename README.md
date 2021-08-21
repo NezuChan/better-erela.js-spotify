@@ -1,9 +1,10 @@
+
 # better-erela.js-spotify
  A erela.js spotify plugin, but more better.
 ## Feature
  - No apikey required!
-## Requirement
+## Requirements
  - Node.JS 14.x
-
-## Example
-![Example Image](https://media.discordapp.net/attachments/857181654682566666/873823708022734898/carbon.png)
+ - Erela.JS 2.3.3
+## Usage Example
+<a href="https://github.com/NezuChan/better-erela.js-spotify"> <img src="https://cdn.discordapp.com/attachments/817980990156701734/878523907634769940/carbon.png"></a>
