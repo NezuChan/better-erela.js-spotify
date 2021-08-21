@@ -19,7 +19,7 @@ jobs:
           git pull origin ${{ github.ref }}
       - name: Installing dependencies
         run: yarn install --frozen-lockfile
-     - name: Compile code
+      - name: Compile code
         run: yarn compile
       - name: Force add dist
         run: git add dist -f
