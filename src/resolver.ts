@@ -46,18 +46,16 @@ export default class resolver {
 
     public async getEpisode(id: string) {
         const tracks = await getTracks(id);
-        const unresolvedTrack = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+        const unresolvedTrack = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
         return { tracks: unresolvedTrack }
     }
     public static buildUnresolved(track: Tracks) { 
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
-        if (!track.artists) throw new ReferenceError("The track artists array was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
-        if (!Array.isArray(track.artists)) throw new TypeError(`The track artists must be an array, received type ${typeof track.artists}`);
         if (typeof track.name !== "string") throw new TypeError(`The track name must be a string, received type ${typeof track.name}`);
         return {
             title: track.name,
-            author: track.artists?.map(x => x.name).join(" "),
+            author: Array.isArray(track.artists) ? track.artists?.map(x => x.name).join(" ") : '',
             duration: track.duration_ms
         }
     }
