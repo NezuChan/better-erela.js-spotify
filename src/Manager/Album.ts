@@ -28,7 +28,7 @@ export class AlbumManager {
                 }
                 this.cache.set(id, {
                     tracks,
-                    title: album.name
+                    name: album.name
                 })
                 return { tracks, name: album.name };
             }
@@ -37,7 +37,7 @@ export class AlbumManager {
             const unresolvedAlbumTracks: UnresolvedSpotifyTrack[] = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
             this.cache.set(id, {
                 tracks: unresolvedAlbumTracks,
-                title: metaData.name
+                name: metaData.name
             })
             return { tracks: unresolvedAlbumTracks, name: metaData.name }
         }
@@ -63,5 +63,5 @@ export class AlbumManager {
 
 interface AlbumCache {
     tracks: UnresolvedSpotifyTrack[],
-    title: string
+    name: string
 }

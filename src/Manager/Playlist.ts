@@ -28,7 +28,7 @@ export class PlaylistManager {
                 }
                 this.cache.set(id, {
                     tracks,
-                    title: playlist.name
+                    name: playlist.name
                 })
 
                 return { tracks, name: playlist.name };
@@ -41,14 +41,14 @@ export class PlaylistManager {
                 const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver.buildUnresolved(track.track)) ?? [];
                 this.cache.set(id, {
                     tracks: unresolvedPlaylistTracks,
-                    title: metaData.name
+                    name: metaData.name
                 })
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name }
             } else {
                 const unresolvedPlaylistTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
                 this.cache.set(id, {
                     tracks: unresolvedPlaylistTracks,
-                    title: metaData.name
+                    name: metaData.name
                 })
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name }
             }
@@ -70,5 +70,5 @@ export class PlaylistManager {
 
 interface ShowCache {
     tracks: UnresolvedSpotifyTrack[],
-    title: string
+    name: string
 }

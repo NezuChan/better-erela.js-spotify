@@ -27,7 +27,7 @@ export class ShowManager {
                 }
                 this.cache.set(id, {
                     tracks,
-                    title: show.name
+                    name: show.name
                 })
 
                 return { tracks, name: show.name };
@@ -37,7 +37,7 @@ export class ShowManager {
             const unresolvedShowTracks: UnresolvedSpotifyTrack[] = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
             this.cache.set(id, {
                 tracks: unresolvedShowTracks,
-                title: metaData.name
+                name: metaData.name
             })
             return { tracks: unresolvedShowTracks, name: metaData.name }
         }
@@ -64,5 +64,5 @@ export class ShowManager {
 
 interface ShowCache {
     tracks: UnresolvedSpotifyTrack[],
-    title: string
+    name: string
 }
