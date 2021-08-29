@@ -2,9 +2,41 @@ import {
     UnresolvedTrack,
     UnresolvedQuery,
 } from "erela.js";
+import { ArtistsEntity } from "spotify-url-info";
 
 export interface SpotifyOptions {
-    convertUnresolved?: boolean
+    convertUnresolved?: boolean,
+    stragery?: Strategy,
+    clientSecret?: string,
+    clientId?: string,
+    cacheTrack?: boolean,
+    showPageLimit?: number,
+    playlistPageLimit?: number,
+    albumPageLimit?: number,
+    maxCacheLifeTime?: number
+}
+
+export interface Playlist {
+    tracks: PlaylistTracks;
+    name: string;
+}
+
+
+export interface Artist {
+    name: string;
+}
+
+export interface ArtistTrack {
+    tracks: SpotifyTrack[];
+}
+
+export interface PlaylistTracks {
+    items: [
+        {
+            track: SpotifyTrack;
+        }
+    ];
+    next: string | null;
 }
 
 export interface SearchResult {
@@ -18,6 +50,38 @@ export interface SearchResult {
         name: string
     } | null;
     tracks: UnresolvedTrack[]
+}
+export interface UnresolvedSpotifyTrack {
+    title: string,
+    author: string,
+    duration: number
+}
+export type Strategy = "SCRAPE" | "API";
+
+export interface SpotifyTrack {
+    artists: ArtistsEntity[];
+    name: string;
+    duration_ms: number;
+}
+
+export interface Album {
+    name: string;
+    tracks: AlbumTracks;
+}
+
+export interface AlbumTracks {
+    items: SpotifyTrack[];
+    next: string | null;
+}
+
+export interface ShowTracks {
+    next: string | null;
+    items: SpotifyTrack[]
+};
+
+export interface Show {
+    name: string,
+    episodes: ShowTracks
 }
 
 export interface Result {
