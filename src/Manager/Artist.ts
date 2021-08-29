@@ -18,7 +18,7 @@ export class ArtistManager {
             if (this.plugin.options.stragery === "API") {
                 const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
                 const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
-                const tracks = playlist.tracks.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver.buildUnresolved(item));
+                const tracks = playlist.tracks.filter(x => x != null).map(item => resolver.buildUnresolved(item));
                 this.cache.set(id, {
                     tracks,
                     name: metaData.name
@@ -37,7 +37,7 @@ export class ArtistManager {
         if (this.plugin.options?.stragery === "API") {
             const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
             const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
-            const tracks = playlist.tracks.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver.buildUnresolved(item));
+            const tracks = playlist.tracks.filter(x => x != null).map(item => resolver.buildUnresolved(item));
             return { tracks, name: metaData.name };
         }
         const tracks = await getTracks(url);

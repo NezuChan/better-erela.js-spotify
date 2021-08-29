@@ -7,7 +7,6 @@ import {
 } from "erela.js";
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
-import fetch from 'petitio'
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
 
 

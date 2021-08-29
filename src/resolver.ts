@@ -52,10 +52,6 @@ export default class resolver {
         return req.json();
     }
 
-    public filterNullOrUndefined(value: unknown): value is unknown {
-        return typeof value !== 'undefined' ? value !== null : typeof value !== 'undefined';
-    }
-
     public async requestToken(): Promise<void> {
         if (this.nextRequest) return;
 
