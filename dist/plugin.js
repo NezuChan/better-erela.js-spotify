@@ -12,25 +12,63 @@ const check = (options) => {
         typeof options?.convertUnresolved !== "boolean") {
         throw new TypeError("Spotify option \"convertUnresolved\" must be a boolean.");
     }
+    if (typeof options?.stragery !== "undefined" &&
+        typeof options?.stragery !== "string") {
+        throw new TypeError("Spotify option \"stragery\" must be a string.");
+    }
+    if (typeof options?.stragery !== "undefined" &&
+        options?.stragery === "API" &&
+        !options?.clientSecret) {
+        throw new TypeError("Spotify option \"clientSecret\" required if strategy set to API.");
+    }
+    if (typeof options?.stragery !== "undefined" &&
+        options?.stragery === "API" &&
+        !options?.clientId) {
+        throw new TypeError("Spotify option \"clientId\" required if strategy set to API.");
+    }
+    if (typeof options?.playlistPageLimit !== "undefined" &&
+        typeof options?.stragery !== "number") {
+        throw new TypeError("Spotify option \"playlistPageLimit\" must be a number.");
+    }
+    if (typeof options?.albumPageLimit !== "undefined" &&
+        typeof options?.stragery !== "number") {
+        throw new TypeError("Spotify option \"albumPageLimit\" must be a number.");
+    }
+    if (typeof options?.showPageLimit !== "undefined" &&
+        typeof options?.stragery !== "number") {
+        throw new TypeError("Spotify option \"showPageLimit\" must be a number.");
+    }
+    if (typeof options?.maxCacheLifeTime !== "undefined" &&
+        typeof options?.stragery !== "number") {
+        throw new TypeError("Spotify option \"maxCacheLifeTime\" must be a number.");
+    }
 };
 class Spotify extends erela_js_1.Plugin {
     constructor(options) {
         super();
-        this.resolver = new resolver_1.default();
+        this.options = options;
+        this.resolver = new resolver_1.default(this);
         this.functions = {
-            track: this.resolver.getTrack.bind(this),
-            album: this.resolver.getAlbum.bind(this),
-            playlist: this.resolver.getPlaylist.bind(this),
-            artist: this.resolver.getArtist.bind(this),
-            show: this.resolver.getShow.bind(this),
-            episode: this.resolver.getEpisode.bind(this)
+            track: this.resolver.getTrack,
+            album: this.resolver.getAlbum,
+            playlist: this.resolver.getPlaylist,
+            artist: this.resolver.getArtist,
+            show: this.resolver.getShow,
+            episode: this.resolver.getEpisode
         };
         check(options);
         this.options = {
             ...options,
         };
+        Object.defineProperty(this, "token", {
+            configurable: true,
+            value: null
+        });
+        if (this.options?.stragery === "API") {
+            this.resolver.requestToken();
+        }
     }
-    load(manager) {
+    async load(manager) {
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
@@ -42,12 +80,12 @@ class Spotify extends erela_js_1.Plugin {
             try {
                 const func = this.functions[type];
                 if (func) {
-                    const data = await func(finalQuery);
-                    const loadType = type === "track" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
+                    const data = await func.fetch(finalQuery, id);
+                    const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = ["playlist", "album", 'artist', 'episode', 'show'].includes(type) ? data.name : null;
                     const tracks = data.tracks.map(query => {
                         const track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
-                        if (this.options.convertUnresolved) {
+                        if (this.options?.convertUnresolved) {
                             try {
                                 track.resolve();
                             }

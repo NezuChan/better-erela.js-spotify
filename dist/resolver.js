@@ -1,48 +1,20 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const spotify_url_info_1 = require("spotify-url-info");
+const Manager_1 = require("./Manager");
+const petitio_1 = __importDefault(require("petitio"));
 class resolver {
-    async getTrack(id) {
-        const tracks = await (0, spotify_url_info_1.getTracks)(id);
-        const unresolvedTrack = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedTrack };
-    }
-    async getPlaylist(id) {
-        const tracks = await (0, spotify_url_info_1.getTracks)(id);
-        const metaData = await (0, spotify_url_info_1.getData)(id);
-        //@ts-expect-error no typings
-        if (typeof tracks[0].track === "object") {
-            //@ts-expect-error no typings
-            const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver.buildUnresolved(track.track)) ?? [];
-            return { tracks: unresolvedPlaylistTracks, name: metaData.name };
-        }
-        else {
-            const unresolvedPlaylistTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
-            return { tracks: unresolvedPlaylistTracks, name: metaData.name };
-        }
-    }
-    async getAlbum(id) {
-        const tracks = await (0, spotify_url_info_1.getTracks)(id);
-        const metaData = await (0, spotify_url_info_1.getData)(id);
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name };
-    }
-    async getArtist(id) {
-        const tracks = await (0, spotify_url_info_1.getTracks)(id);
-        const metaData = await (0, spotify_url_info_1.getData)(id);
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name };
-    }
-    async getShow(id) {
-        const tracks = await (0, spotify_url_info_1.getTracks)(id);
-        const metaData = await (0, spotify_url_info_1.getData)(id);
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name };
-    }
-    async getEpisode(id) {
-        const tracks = await (0, spotify_url_info_1.getTracks)(id);
-        const unresolvedTrack = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedTrack };
+    constructor(plugin) {
+        this.plugin = plugin;
+        this.getTrack = new Manager_1.TrackManager(this.plugin);
+        this.getPlaylist = new Manager_1.PlaylistManager(this.plugin);
+        this.getAlbum = new Manager_1.AlbumManager(this.plugin);
+        this.getArtist = new Manager_1.ArtistManager(this.plugin);
+        this.getShow = new Manager_1.ShowManager(this.plugin);
+        this.getEpisode = new Manager_1.EpisodeManager(this.plugin);
+        this.BASE_URL = "https://api.spotify.com/v1";
     }
     static buildUnresolved(track) {
         if (!track)
@@ -53,7 +25,7 @@ class resolver {
             throw new TypeError(`The track name must be a string, received type ${typeof track.name}`);
         return {
             title: track.name,
-            author: Array.isArray(track.artists) ? track.artists?.map(x => x.name).join(" ") : '',
+            author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
             duration: track.duration_ms
         };
     }
@@ -70,6 +42,48 @@ class resolver {
                 severity: "COMMON",
             } : null
         };
+    }
+    async makeRequest(endpoint, modify = () => void 0) {
+        if (!this.token)
+            await this.requestToken();
+        console.log(this.token);
+        const req = (0, petitio_1.default)(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`)
+            .header("Authorization", this.token);
+        modify(req);
+        return req.json();
+    }
+    filterNullOrUndefined(value) {
+        return typeof value !== 'undefined' ? value !== null : typeof value !== 'undefined';
+    }
+    async requestToken() {
+        if (this.nextRequest)
+            return;
+        try {
+            const request = await (0, petitio_1.default)("https://accounts.spotify.com/api/token", "POST")
+                .header({
+                Authorization: `Basic ${Buffer.from(this.plugin.options?.clientId + ":" + this.plugin.options?.clientSecret).toString("base64")}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            }).body("grant_type=client_credentials").send();
+            if (request.statusCode === 400)
+                return Promise.reject(new Error("Invalid Spotify Client"));
+            const { access_token, token_type, expires_in } = request.json();
+            Object.defineProperty(this, "token", {
+                value: `${token_type} ${access_token}`
+            });
+            Object.defineProperty(this, "nextRequest", {
+                configurable: true,
+                value: setTimeout(() => {
+                    delete this.nextRequest;
+                    void this.requestToken();
+                }, expires_in * 1000)
+            });
+        }
+        catch (e) {
+            if (e.statusCode === 400) {
+                return Promise.reject(new Error("Invalid Spotify client."));
+            }
+            await this.requestToken();
+        }
     }
 }
 exports.default = resolver;
