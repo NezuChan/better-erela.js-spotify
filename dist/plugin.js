@@ -60,10 +60,6 @@ class Spotify extends erela_js_1.Plugin {
         this.options = {
             ...options,
         };
-        Object.defineProperty(this, "token", {
-            configurable: true,
-            value: null
-        });
         if (this.options?.stragery === "API") {
             this.resolver.requestToken();
         }

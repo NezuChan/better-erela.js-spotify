@@ -7,7 +7,6 @@ export declare class Spotify extends Plugin {
     private _search;
     private readonly functions;
     manager: Manager | undefined;
-    token: string;
     constructor(options?: SpotifyOptions | undefined);
     load(manager: Manager): Promise<void>;
     private search;
