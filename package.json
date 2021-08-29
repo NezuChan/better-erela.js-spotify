@@ -2,7 +2,7 @@
   "name": "better-erela.js-spotify",
   "main": "dist",
   "description": "A better version of erela.js-spotify plugin",
-  "version": "0.2.3",
+  "version": "1.0.0",
   "devDependencies": {
     "@types/node": "^16.4.10",
     "rimraf": "^3.0.2",
