@@ -33,7 +33,7 @@ class PlaylistManager {
                 }
                 this.cache.set(id, {
                     tracks,
-                    title: playlist.name
+                    name: playlist.name
                 });
                 return { tracks, name: playlist.name };
             }
@@ -45,7 +45,7 @@ class PlaylistManager {
                 const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver_1.default.buildUnresolved(track.track)) ?? [];
                 this.cache.set(id, {
                     tracks: unresolvedPlaylistTracks,
-                    title: metaData.name
+                    name: metaData.name
                 });
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name };
             }
@@ -53,7 +53,7 @@ class PlaylistManager {
                 const unresolvedPlaylistTracks = tracks.map(track => resolver_1.default.buildUnresolved(track)) ?? [];
                 this.cache.set(id, {
                     tracks: unresolvedPlaylistTracks,
-                    title: metaData.name
+                    name: metaData.name
                 });
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name };
             }

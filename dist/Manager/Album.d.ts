@@ -5,13 +5,13 @@ export declare class AlbumManager {
     plugin: Spotify;
     cache: Collection<string, AlbumCache>;
     constructor(plugin: Spotify);
-    fetch(url: string, id: string): Promise<AlbumCache | {
+    fetch(url: string, id: string): Promise<{
         tracks: UnresolvedSpotifyTrack[];
         name: any;
     }>;
 }
 interface AlbumCache {
     tracks: UnresolvedSpotifyTrack[];
-    title: string;
+    name: string;
 }
 export {};

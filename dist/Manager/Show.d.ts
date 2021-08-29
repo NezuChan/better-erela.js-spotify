@@ -5,13 +5,13 @@ export declare class ShowManager {
     plugin: Spotify;
     cache: Collection<string, ShowCache>;
     constructor(plugin: Spotify);
-    fetch(url: string, id: string): Promise<ShowCache | {
+    fetch(url: string, id: string): Promise<{
         tracks: UnresolvedSpotifyTrack[];
         name: any;
     }>;
 }
 interface ShowCache {
     tracks: UnresolvedSpotifyTrack[];
-    title: string;
+    name: string;
 }
 export {};

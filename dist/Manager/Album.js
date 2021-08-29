@@ -33,7 +33,7 @@ class AlbumManager {
                 }
                 this.cache.set(id, {
                     tracks,
-                    title: album.name
+                    name: album.name
                 });
                 return { tracks, name: album.name };
             }
@@ -42,7 +42,7 @@ class AlbumManager {
             const unresolvedAlbumTracks = tracks.map(track => track && resolver_1.default.buildUnresolved(track)) ?? [];
             this.cache.set(id, {
                 tracks: unresolvedAlbumTracks,
-                title: metaData.name
+                name: metaData.name
             });
             return { tracks: unresolvedAlbumTracks, name: metaData.name };
         }

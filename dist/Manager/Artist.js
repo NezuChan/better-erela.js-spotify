@@ -27,7 +27,7 @@ class ArtistManager {
                 const tracks = playlist.tracks.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item));
                 this.cache.set(id, {
                     tracks,
-                    title: metaData.name
+                    name: metaData.name
                 });
                 return { tracks, name: metaData.name };
             }
@@ -36,7 +36,7 @@ class ArtistManager {
             const unresolvedAlbumTracks = tracks.map(track => track && resolver_1.default.buildUnresolved(track)) ?? [];
             this.cache.set(id, {
                 tracks: unresolvedAlbumTracks,
-                title: metaData.name
+                name: metaData.name
             });
             return { tracks: unresolvedAlbumTracks, name: metaData.name };
         }

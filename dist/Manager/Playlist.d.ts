@@ -5,7 +5,7 @@ export declare class PlaylistManager {
     plugin: Spotify;
     cache: Collection<string, ShowCache>;
     constructor(plugin: Spotify);
-    fetch(url: string, id: string): Promise<ShowCache | {
+    fetch(url: string, id: string): Promise<{
         tracks: {
             title: string;
             author: string;
@@ -16,6 +16,6 @@ export declare class PlaylistManager {
 }
 interface ShowCache {
     tracks: UnresolvedSpotifyTrack[];
-    title: string;
+    name: string;
 }
 export {};
