@@ -21,7 +21,6 @@ export class ShowManager {
                 let next = show.episodes.next, page = 1
                 while (next && (!this.plugin.options.showPageLimit ? true : page < this.plugin.options.showPageLimit!)) {
                     const nextPage = await this.plugin.resolver.makeRequest<ShowTracks>(next!.split("v1")[1]);
-                    console.log(nextPage)
                     tracks.push(...nextPage.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver.buildUnresolved(item)));
                     next = nextPage.next;
                     page++

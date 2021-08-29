@@ -45,7 +45,6 @@ export default class resolver {
     
     public async makeRequest<T>(endpoint: string, modify: ModifyRequest = () => void 0): Promise<T> {
         if (!this.token) await this.requestToken()
-        console.log(this.token)
         const req = fetch(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`)
             .header("Authorization", this.token);
 
