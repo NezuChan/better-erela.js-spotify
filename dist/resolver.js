@@ -46,7 +46,6 @@ class resolver {
     async makeRequest(endpoint, modify = () => void 0) {
         if (!this.token)
             await this.requestToken();
-        console.log(this.token);
         const req = (0, petitio_1.default)(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`)
             .header("Authorization", this.token);
         modify(req);

@@ -27,7 +27,6 @@ class ShowManager {
                 let next = show.episodes.next, page = 1;
                 while (next && (!this.plugin.options.showPageLimit ? true : page < this.plugin.options.showPageLimit)) {
                     const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                    console.log(nextPage);
                     tracks.push(...nextPage.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item)));
                     next = nextPage.next;
                     page++;
