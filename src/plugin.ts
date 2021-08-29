@@ -95,18 +95,12 @@ export class Spotify extends Plugin {
         episode: this.resolver.getEpisode
     };
     public manager: Manager | undefined;
-    public token!: string;
-    
     public constructor(public options?: SpotifyOptions) {
         super();
         check(options);
         this.options = {
             ...options,
         };
-        Object.defineProperty(this, "token", {
-            configurable: true,
-            value: null
-        });
         if (this.options?.stragery === "API") {
             this.resolver.requestToken()
         }
