@@ -23,11 +23,11 @@ class AlbumManager {
                 return this.cache.get(id);
             if (this.plugin.options.stragery === "API") {
                 const album = await this.plugin.resolver.makeRequest(`/albums/${id}`);
-                const tracks = album.tracks.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item));
+                const tracks = album.tracks.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
                 let next = album.tracks.next, page = 1;
                 while (next && (!this.plugin.options.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
                     const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                    tracks.push(...nextPage.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item)));
+                    tracks.push(...nextPage.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item)));
                     next = nextPage.next;
                     page++;
                 }
@@ -48,11 +48,11 @@ class AlbumManager {
         }
         if (this.plugin.options?.stragery === "API") {
             const album = await this.plugin.resolver.makeRequest(`/albums/${id}`);
-            const tracks = album.tracks.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item));
+            const tracks = album.tracks.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
             let next = album.tracks.next, page = 1;
             while (next && (!this.plugin.options?.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
                 const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item)));
+                tracks.push(...nextPage.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item)));
                 next = nextPage.next;
                 page++;
             }

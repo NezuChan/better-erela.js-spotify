@@ -23,11 +23,11 @@ class PlaylistManager {
                 return this.cache.get(id);
             if (this.plugin.options.stragery === "API") {
                 const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
-                const tracks = playlist.tracks.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item.track));
+                const tracks = playlist.tracks.items.filter(x => x.track != null).map(item => resolver_1.default.buildUnresolved(item.track));
                 let next = playlist.tracks.next, page = 1;
                 while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
                     const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                    tracks.push(...nextPage.items.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item.track)));
+                    tracks.push(...nextPage.items.filter(x => x.track != null).map(item => resolver_1.default.buildUnresolved(item.track)));
                     next = nextPage.next;
                     page++;
                 }

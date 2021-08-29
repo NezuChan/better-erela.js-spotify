@@ -51,9 +51,6 @@ class resolver {
         modify(req);
         return req.json();
     }
-    filterNullOrUndefined(value) {
-        return typeof value !== 'undefined' ? value !== null : typeof value !== 'undefined';
-    }
     async requestToken() {
         if (this.nextRequest)
             return;

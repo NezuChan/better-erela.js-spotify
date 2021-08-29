@@ -24,7 +24,7 @@ class ArtistManager {
             if (this.plugin.options.stragery === "API") {
                 const metaData = await this.plugin.resolver.makeRequest(`/artists/${id}?market=US`);
                 const playlist = await this.plugin.resolver.makeRequest(`/artists/${id}/top-tracks?country=US`);
-                const tracks = playlist.tracks.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item));
+                const tracks = playlist.tracks.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
                 this.cache.set(id, {
                     tracks,
                     name: metaData.name
@@ -43,7 +43,7 @@ class ArtistManager {
         if (this.plugin.options?.stragery === "API") {
             const metaData = await this.plugin.resolver.makeRequest(`/artists/${id}?market=US`);
             const playlist = await this.plugin.resolver.makeRequest(`/artists/${id}/top-tracks?country=US`);
-            const tracks = playlist.tracks.filter(this.plugin.resolver.filterNullOrUndefined).map(item => resolver_1.default.buildUnresolved(item));
+            const tracks = playlist.tracks.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
             return { tracks, name: metaData.name };
         }
         const tracks = await (0, spotify_url_info_1.getTracks)(url);

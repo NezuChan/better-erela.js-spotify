@@ -22,6 +22,5 @@ export default class resolver {
     };
     static buildSearch(loadType: LoadType, tracks: UnresolvedTrack[], error: string, name: string): SearchResult;
     makeRequest<T>(endpoint: string, modify?: ModifyRequest): Promise<T>;
-    filterNullOrUndefined(value: unknown): value is unknown;
     requestToken(): Promise<void>;
 }
