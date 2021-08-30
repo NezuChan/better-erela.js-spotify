@@ -7,7 +7,6 @@ import {
 } from "erela.js";
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
-
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
 
 
@@ -20,32 +19,93 @@ const check = (options?: SpotifyOptions) => {
             "Spotify option \"convertUnresolved\" must be a boolean.",
         );
     }
+    if (
+        typeof options?.stragery !== "undefined" &&
+        typeof options?.stragery !== "string"
+    ) {
+        throw new TypeError(
+            "Spotify option \"stragery\" must be a string.",
+        );
+    }
+
+    if (
+        typeof options?.stragery !== "undefined" &&
+        options?.stragery === "API" &&
+        !options?.clientSecret
+    ) {
+        throw new TypeError(
+            "Spotify option \"clientSecret\" required if strategy set to API.",
+        );
+    }
+    if (
+        typeof options?.stragery !== "undefined" &&
+        options?.stragery === "API" &&
+        !options?.clientId
+    ) {
+        throw new TypeError(
+            "Spotify option \"clientId\" required if strategy set to API.",
+        );
+    }
+    if (
+        typeof options?.playlistPageLimit !== "undefined" &&
+        typeof options?.stragery !== "number" 
+    ) {
+        throw new TypeError(
+            "Spotify option \"playlistPageLimit\" must be a number.",
+        );
+    }
+    if (
+        typeof options?.albumPageLimit !== "undefined" &&
+        typeof options?.stragery !== "number"
+    ) {
+        throw new TypeError(
+            "Spotify option \"albumPageLimit\" must be a number.",
+        );
+    }
+
+    if (
+        typeof options?.showPageLimit !== "undefined" &&
+        typeof options?.stragery !== "number"
+    ) {
+        throw new TypeError(
+            "Spotify option \"showPageLimit\" must be a number.",
+        );
+    }
+    if (
+        typeof options?.maxCacheLifeTime !== "undefined" &&
+        typeof options?.stragery !== "number"
+    ) {
+        throw new TypeError(
+            "Spotify option \"maxCacheLifeTime\" must be a number.",
+        );
+    }
 }
 
 export class Spotify extends Plugin {
-    private readonly options: SpotifyOptions;
-    private readonly resolver = new resolver()
+    public readonly resolver = new resolver(this)
     //@ts-expect-error _search is persistent
     private _search: (query: string | SearchQuery, requester?: unknown) => Promise<SearchResult>;
     private readonly functions = {
-        track: this.resolver.getTrack.bind(this),
-        album: this.resolver.getAlbum.bind(this),
-        playlist: this.resolver.getPlaylist.bind(this),
-        artist: this.resolver.getArtist.bind(this),
-        show: this.resolver.getShow.bind(this),
-        episode: this.resolver.getEpisode.bind(this)
+        track: this.resolver.getTrack,
+        album: this.resolver.getAlbum,
+        playlist: this.resolver.getPlaylist,
+        artist: this.resolver.getArtist,
+        show: this.resolver.getShow,
+        episode: this.resolver.getEpisode
     };
-    
     public manager: Manager | undefined;
-    public constructor(options?: SpotifyOptions) {
+    public constructor(public options?: SpotifyOptions) {
         super();
         check(options);
         this.options = {
             ...options,
         };
+        if (this.options?.stragery === "API") {
+            this.resolver.requestToken()
+        }
     }
-
-    public load(manager: Manager) {
+    
+    public async load(manager: Manager) { 
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
@@ -54,27 +114,24 @@ export class Spotify extends Plugin {
     private async search(query: string | SearchQuery, requester?: unknown): Promise<SearchResult> {
         const finalQuery = (query as SearchQuery).query || query as string;
         const [ , type, id ] = finalQuery.match(REGEX) ?? [];
+        
         if (type in this.functions) {
             try {
                 const func = this.functions[type as keyof Spotify['functions']];
 
                 if (func) {
-                    const data: Result = await func(finalQuery);
-
-                    const loadType = type === "track" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
+                    const data: Result = await func.fetch(finalQuery, id);
+                    const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
-
                     const tracks = data.tracks.map(query => {
                         const track = TrackUtils.buildUnresolved(query, requester);
-
-                        if (this.options.convertUnresolved) {
+                        if (this.options?.convertUnresolved) {
                             try {
                                 track.resolve();
                             } catch {
                                 return null;
                             }
                         }
-
                         return track;
                     }).filter(track => !!track);
                     //@ts-expect-error type mabok
@@ -89,8 +146,7 @@ export class Spotify extends Plugin {
             }
     }
     return this._search(query, requester);
-}
-
+    }
 }
 
 

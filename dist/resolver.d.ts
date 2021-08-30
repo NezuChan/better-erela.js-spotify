@@ -1,57 +1,26 @@
-import { UnresolvedTrack, LoadType } from "erela.js";
+import { UnresolvedTrack, LoadType, ModifyRequest } from "erela.js";
 import { Tracks } from "spotify-url-info";
-import { SearchResult } from "./typings";
+import { SearchResult, SpotifyTrack } from "./typings";
+import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
+import Spotify from './index';
 export default class resolver {
-    getTrack(id: string): Promise<{
-        tracks: {
-            title: string;
-            author: string;
-            duration: number;
-        }[];
-    }>;
-    getPlaylist(id: string): Promise<{
-        tracks: {
-            title: string;
-            author: string;
-            duration: number;
-        }[];
-        name: any;
-    }>;
-    getAlbum(id: string): Promise<{
-        tracks: {
-            title: string;
-            author: string;
-            duration: number;
-        }[];
-        name: any;
-    }>;
-    getArtist(id: string): Promise<{
-        tracks: {
-            title: string;
-            author: string;
-            duration: number;
-        }[];
-        name: any;
-    }>;
-    getShow(id: string): Promise<{
-        tracks: {
-            title: string;
-            author: string;
-            duration: number;
-        }[];
-        name: any;
-    }>;
-    getEpisode(id: string): Promise<{
-        tracks: {
-            title: string;
-            author: string;
-            duration: number;
-        }[];
-    }>;
-    static buildUnresolved(track: Tracks): {
+    plugin: Spotify;
+    constructor(plugin: Spotify);
+    getTrack: TrackManager;
+    getPlaylist: PlaylistManager;
+    getAlbum: AlbumManager;
+    getArtist: ArtistManager;
+    getShow: ShowManager;
+    getEpisode: EpisodeManager;
+    private nextRequest?;
+    token: string;
+    BASE_URL: string;
+    static buildUnresolved(track: Tracks | SpotifyTrack): {
         title: string;
         author: string;
         duration: number;
     };
     static buildSearch(loadType: LoadType, tracks: UnresolvedTrack[], error: string, name: string): SearchResult;
+    makeRequest<T>(endpoint: string, modify?: ModifyRequest): Promise<T>;
+    requestToken(): Promise<void>;
 }

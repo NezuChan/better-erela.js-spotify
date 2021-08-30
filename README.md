@@ -2,7 +2,9 @@
 # better-erela.js-spotify
  A erela.js spotify plugin, but more better.
 ## Feature
- - No apikey required!
+ - Support both api and scrape strategy
+ - Track caching
+ - full coverage of spotify api, load track from show, episode, album, and artist
 ## Requirements
  - Node.JS 14.x
  - Erela.JS 2.3.3

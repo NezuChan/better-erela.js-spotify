@@ -1,61 +1,29 @@
-import { UnresolvedTrack, LoadType } from "erela.js";
-import { getData, getTracks, Tracks } from "spotify-url-info";
-import { SearchResult } from "./typings";
+import { UnresolvedTrack, LoadType, ModifyRequest } from "erela.js";
+import { Tracks } from "spotify-url-info";
+import { SearchResult, SpotifyTrack } from "./typings";
+import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
+import Spotify from './index';
+import fetch from 'petitio';
 
 export default class resolver {
-    public async getTrack(id: string) {
-        const tracks = await getTracks(id);
-        const unresolvedTrack = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedTrack }
-    }
+    constructor(public plugin: Spotify) { }
+    public getTrack = new TrackManager(this.plugin);
+    public getPlaylist = new PlaylistManager(this.plugin);
+    public getAlbum = new AlbumManager(this.plugin);
+    public getArtist = new ArtistManager(this.plugin);
+    public getShow = new ShowManager(this.plugin);
+    public getEpisode = new EpisodeManager(this.plugin);
+    private nextRequest?: NodeJS.Timeout;
+    public token!: string;
+    public BASE_URL = "https://api.spotify.com/v1";
 
-    public async getPlaylist(id: string) {
-        const tracks = await getTracks(id);
-        const metaData = await getData(id)
-        //@ts-expect-error no typings
-        if (typeof tracks[0].track === "object") {
-            //@ts-expect-error no typings
-            const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver.buildUnresolved(track.track)) ?? [];
-            return { tracks: unresolvedPlaylistTracks, name: metaData.name }
-        } else {
-            const unresolvedPlaylistTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
-            return { tracks: unresolvedPlaylistTracks, name: metaData.name }
-        }
-    }
-
-    public async getAlbum(id: string) {
-        const tracks = await getTracks(id);
-        const metaData = await getData(id)
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name }
-    }
-
-    public async getArtist(id: string) {
-        const tracks = await getTracks(id);
-        const metaData = await getData(id)
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name }
-    }
-
-    public async getShow(id: string) {
-        const tracks = await getTracks(id);
-        const metaData = await getData(id)
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name }
-    }
-
-    public async getEpisode(id: string) {
-        const tracks = await getTracks(id);
-        const unresolvedTrack = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedTrack }
-    }
-    public static buildUnresolved(track: Tracks) { 
+    public static buildUnresolved(track: Tracks | SpotifyTrack) { 
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
         if (typeof track.name !== "string") throw new TypeError(`The track name must be a string, received type ${typeof track.name}`);
         return {
             title: track.name,
-            author: Array.isArray(track.artists) ? track.artists?.map(x => x.name).join(" ") : '',
+            author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
             duration: track.duration_ms
         }
     }
@@ -72,6 +40,45 @@ export default class resolver {
                 message: error,
                 severity: "COMMON",
             } : null
+        }
+    }
+    
+    public async makeRequest<T>(endpoint: string, modify: ModifyRequest = () => void 0): Promise<T> {
+        if (!this.token) await this.requestToken()
+        const req = fetch(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`)
+            .header("Authorization", this.token);
+
+        modify(req);
+        return req.json();
+    }
+
+    public async requestToken(): Promise<void> {
+        if (this.nextRequest) return;
+
+        try {
+            const request = await fetch("https://accounts.spotify.com/api/token", "POST")
+                .header({
+                    Authorization: `Basic ${Buffer.from(this.plugin.options?.clientId + ":" + this.plugin.options?.clientSecret).toString("base64")}`, // eslint-disable-line
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }).body("grant_type=client_credentials").send();
+
+            if (request.statusCode === 400) return Promise.reject(new Error("Invalid Spotify Client"));
+            const { access_token, token_type, expires_in }: { access_token: string; token_type: string; expires_in: number } = request.json();
+            Object.defineProperty(this, "token", {
+                value: `${token_type} ${access_token}`
+            });
+            Object.defineProperty(this, "nextRequest", {
+                configurable: true,
+                value: setTimeout(() => {
+                    delete this.nextRequest;
+                    void this.requestToken();
+                }, expires_in * 1000)
+            });
+        } catch (e: any) {
+            if (e.statusCode === 400) {
+                return Promise.reject(new Error("Invalid Spotify client."));
+            }
+            await this.requestToken();
         }
     }
 }
