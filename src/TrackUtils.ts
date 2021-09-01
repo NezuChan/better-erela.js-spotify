@@ -151,11 +151,6 @@ export abstract class TrackUtils extends TrackUtilsOri {
                 const resolved = await TrackUtils.getClosestTrack(this)
                  //@ts-expect-error
                 Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
-                Object.assign(resolved, {
-                    title: (query as UnresolvedSpotifyTrack).title,
-                    thumbnail: (query as UnresolvedSpotifyTrack).thumbnail,
-                    uri: (query as UnresolvedSpotifyTrack).uri
-                })
                 Object.assign(this, resolved);
                 
             }
