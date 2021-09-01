@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Spotify = void 0;
 const erela_js_1 = require("erela.js");
+const TrackUtils_1 = require("./TrackUtils");
 const resolver_1 = __importDefault(require("./resolver"));
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
 const check = (options) => {
@@ -80,18 +81,10 @@ class Spotify extends erela_js_1.Plugin {
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = ["playlist", "album", 'artist', 'episode', 'show'].includes(type) ? data.name : null;
                     const tracks = data.tracks.map(query => {
-                        const track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
+                        const track = TrackUtils_1.TrackUtils.buildUnresolved(query, requester);
                         if (this.options?.convertUnresolved) {
                             try {
-                                const oldTrackUrl = track.uri;
-                                const oldTrackTitle = track.title;
-                                const oldTrackThumbnail = track.thumbnail;
                                 track.resolve();
-                                track.title = oldTrackTitle;
-                                //@ts-expect-error if we want to keep spotify meta data
-                                track.thumbnail = oldTrackThumbnail;
-                                //@ts-expect-error if we want to keep spotify meta data
-                                track.uri = oldTrackUrl;
                             }
                             catch {
                                 return null;
