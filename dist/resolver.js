@@ -28,7 +28,7 @@ class resolver {
             author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
             duration: track.duration_ms,
             uri: track.external_urls.spotify,
-            thumbnail: track?.album?.images[0]?.url ?? null
+            thumbnail: track.images ? track?.images[0]?.url ?? null : track.album.images[0].url ?? null
         };
     }
     static buildSearch(loadType, tracks, error, name) {
