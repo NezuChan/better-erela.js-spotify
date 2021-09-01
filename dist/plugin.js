@@ -27,19 +27,19 @@ const check = (options) => {
         throw new TypeError("Spotify option \"clientId\" required if strategy set to API.");
     }
     if (typeof options?.playlistPageLimit !== "undefined" &&
-        typeof options?.stragery !== "number") {
+        typeof options?.playlistPageLimit !== "number") {
         throw new TypeError("Spotify option \"playlistPageLimit\" must be a number.");
     }
     if (typeof options?.albumPageLimit !== "undefined" &&
-        typeof options?.stragery !== "number") {
+        typeof options?.albumPageLimit !== "number") {
         throw new TypeError("Spotify option \"albumPageLimit\" must be a number.");
     }
     if (typeof options?.showPageLimit !== "undefined" &&
-        typeof options?.stragery !== "number") {
+        typeof options?.showPageLimit !== "number") {
         throw new TypeError("Spotify option \"showPageLimit\" must be a number.");
     }
     if (typeof options?.maxCacheLifeTime !== "undefined" &&
-        typeof options?.stragery !== "number") {
+        typeof options?.maxCacheLifeTime !== "number") {
         throw new TypeError("Spotify option \"maxCacheLifeTime\" must be a number.");
     }
 };
