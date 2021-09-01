@@ -83,7 +83,15 @@ class Spotify extends erela_js_1.Plugin {
                         const track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
                         if (this.options?.convertUnresolved) {
                             try {
+                                const oldTrackUrl = track.uri;
+                                const oldTrackTitle = track.title;
+                                const oldTrackThumbnail = track.thumbnail;
                                 track.resolve();
+                                track.title = oldTrackTitle;
+                                //@ts-expect-error if we want to keep spotify meta data
+                                track.thumbnail = oldTrackThumbnail;
+                                //@ts-expect-error if we want to keep spotify meta data
+                                track.uri = oldTrackUrl;
                             }
                             catch {
                                 return null;
