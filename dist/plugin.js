@@ -12,17 +12,17 @@ const check = (options) => {
         typeof options?.convertUnresolved !== "boolean") {
         throw new TypeError("Spotify option \"convertUnresolved\" must be a boolean.");
     }
-    if (typeof options?.stragery !== "undefined" &&
-        typeof options?.stragery !== "string") {
-        throw new TypeError("Spotify option \"stragery\" must be a string.");
+    if (typeof options?.strategy !== "undefined" &&
+        typeof options?.strategy !== "string") {
+        throw new TypeError("Spotify option \"strategy\" must be a string.");
     }
-    if (typeof options?.stragery !== "undefined" &&
-        options?.stragery === "API" &&
+    if (typeof options?.strategy !== "undefined" &&
+        options?.strategy === "API" &&
         !options?.clientSecret) {
         throw new TypeError("Spotify option \"clientSecret\" required if strategy set to API.");
     }
-    if (typeof options?.stragery !== "undefined" &&
-        options?.stragery === "API" &&
+    if (typeof options?.strategy !== "undefined" &&
+        options?.strategy === "API" &&
         !options?.clientId) {
         throw new TypeError("Spotify option \"clientId\" required if strategy set to API.");
     }
@@ -60,7 +60,7 @@ class Spotify extends erela_js_1.Plugin {
         this.options = {
             ...options,
         };
-        if (this.options?.stragery === "API") {
+        if (this.options?.strategy === "API") {
             this.resolver.requestToken();
         }
     }

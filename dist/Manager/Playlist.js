@@ -21,7 +21,7 @@ class PlaylistManager {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id))
                 return this.cache.get(id);
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
                 const tracks = playlist.tracks.items.filter(x => x.track != null).map(item => resolver_1.default.buildUnresolved(item.track));
                 let next = playlist.tracks.next, page = 1;
@@ -58,7 +58,7 @@ class PlaylistManager {
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name };
             }
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
             const tracks = playlist.tracks.items.filter(x => x.track != null).map(item => resolver_1.default.buildUnresolved(item.track));
             let next = playlist.tracks.next, page = 1;

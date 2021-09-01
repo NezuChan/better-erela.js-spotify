@@ -21,7 +21,7 @@ class AlbumManager {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id))
                 return this.cache.get(id);
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const album = await this.plugin.resolver.makeRequest(`/albums/${id}`);
                 const tracks = album.tracks.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
                 let next = album.tracks.next, page = 1;
@@ -46,7 +46,7 @@ class AlbumManager {
             });
             return { tracks: unresolvedAlbumTracks, name: metaData.name };
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const album = await this.plugin.resolver.makeRequest(`/albums/${id}`);
             const tracks = album.tracks.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
             let next = album.tracks.next, page = 1;

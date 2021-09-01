@@ -21,7 +21,7 @@ class TrackManager {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id))
                 return { tracks: this.cache.get(id) };
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const data = await this.plugin.resolver.makeRequest(`/tracks/${id}`);
                 const track = resolver_1.default.buildUnresolved(data);
                 this.cache.set(id, [track]);
@@ -32,7 +32,7 @@ class TrackManager {
             this.cache.set(id, unresolvedTrack);
             return { tracks: unresolvedTrack };
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const data = await this.plugin.resolver.makeRequest(`/tracks/${id}`);
             const track = resolver_1.default.buildUnresolved(data);
             return { tracks: [track] };

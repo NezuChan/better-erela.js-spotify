@@ -21,7 +21,7 @@ class ArtistManager {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id))
                 return this.cache.get(id);
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const metaData = await this.plugin.resolver.makeRequest(`/artists/${id}?market=US`);
                 const playlist = await this.plugin.resolver.makeRequest(`/artists/${id}/top-tracks?country=US`);
                 const tracks = playlist.tracks.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
@@ -40,7 +40,7 @@ class ArtistManager {
             });
             return { tracks: unresolvedAlbumTracks, name: metaData.name };
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const metaData = await this.plugin.resolver.makeRequest(`/artists/${id}?market=US`);
             const playlist = await this.plugin.resolver.makeRequest(`/artists/${id}/top-tracks?country=US`);
             const tracks = playlist.tracks.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));

@@ -21,7 +21,7 @@ class ShowManager {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id))
                 return this.cache.get(id);
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const show = await this.plugin.resolver.makeRequest(`/shows/${id}?market=US`);
                 const tracks = show.episodes.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
                 let next = show.episodes.next, page = 1;
@@ -46,7 +46,7 @@ class ShowManager {
             });
             return { tracks: unresolvedShowTracks, name: metaData.name };
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const show = await this.plugin.resolver.makeRequest(`/shows/${id}?market=US`);
             const tracks = show.episodes.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item));
             let next = show.episodes.next, page = 1;

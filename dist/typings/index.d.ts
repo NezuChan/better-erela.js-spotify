@@ -2,7 +2,7 @@ import { UnresolvedTrack, UnresolvedQuery } from "erela.js";
 import { ArtistsEntity } from "spotify-url-info";
 export interface SpotifyOptions {
     convertUnresolved?: boolean;
-    stragery?: Strategy;
+    strategy?: Strategy;
     clientSecret?: string;
     clientId?: string;
     cacheTrack?: boolean;
