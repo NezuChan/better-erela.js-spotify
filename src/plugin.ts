@@ -2,9 +2,9 @@ import {
     Manager,
     Plugin,
     SearchQuery,
-    SearchResult
+    SearchResult,
+    TrackUtils
 } from "erela.js";
-import { TrackUtils } from "./TrackUtils";
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
 const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
@@ -109,7 +109,6 @@ export class Spotify extends Plugin {
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
-        TrackUtils.init(manager);
     }
 
     private async search(query: string | SearchQuery, requester?: unknown): Promise<SearchResult> {
@@ -124,17 +123,25 @@ export class Spotify extends Plugin {
                     const data: Result = await func.fetch(finalQuery, id);
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
-                    const tracks = data.tracks.map(query => {
+                    const tracks = await Promise.all(data.tracks.map(async query => {
                         const track = TrackUtils.buildUnresolved(query, requester);
                         if (this.options?.convertUnresolved) {
                             try {
-                                track.resolve();
+                                const oldTrackThumbnail = track.thumbnail;
+                                const oldTrackTitle = track.title;
+                                const oldTrackUri = track.uri;
+                                await track.resolve();
+                                Object.assign(track, {
+                                    thumbnail: oldTrackThumbnail,
+                                    title: oldTrackTitle,
+                                    uri: oldTrackUri
+                                })
                             } catch {
                                 return null;
                             }
                         }
                         return track;
-                    }).filter(track => !!track);
+                    }).filter(track => !!track));
                     //@ts-expect-error type mabok
                     return resolver.buildSearch(loadType, tracks, null, name);
                 }
