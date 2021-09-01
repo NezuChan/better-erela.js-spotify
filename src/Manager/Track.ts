@@ -28,7 +28,7 @@ export class TrackManager {
         }
         
         if (this.plugin.options?.stragery === "API") {
-            const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`${this.plugin.resolver.BASE_URL}/tracks/${id}`);
+            const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/tracks/${id}`);
             const track = resolver.buildUnresolved(data);
             return { tracks: [track] };
         }
