@@ -5,11 +5,13 @@ export declare class PlaylistManager {
     plugin: Spotify;
     cache: Collection<string, ShowCache>;
     constructor(plugin: Spotify);
-    fetch(url: string, id: string): Promise<{
+    fetch(url: string, id: string): Promise<ShowCache | {
         tracks: {
             title: string;
             author: string;
             duration: number;
+            uri: string;
+            thumbnail: string;
         }[];
         name: any;
     }>;

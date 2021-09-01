@@ -19,6 +19,8 @@ export default class resolver {
         title: string;
         author: string;
         duration: number;
+        uri: string;
+        thumbnail: string;
     };
     static buildSearch(loadType: LoadType, tracks: UnresolvedTrack[], error: string, name: string): SearchResult;
     makeRequest<T>(endpoint: string, modify?: ModifyRequest): Promise<T>;

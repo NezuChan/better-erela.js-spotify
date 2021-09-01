@@ -26,7 +26,9 @@ class resolver {
         return {
             title: track.name,
             author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
-            duration: track.duration_ms
+            duration: track.duration_ms,
+            uri: track.external_urls.spotify,
+            thumbnail: track?.album?.images[0]?.url ?? null
         };
     }
     static buildSearch(loadType, tracks, error, name) {

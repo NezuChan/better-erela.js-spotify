@@ -45,12 +45,25 @@ export interface UnresolvedSpotifyTrack {
     title: string;
     author: string;
     duration: number;
+    uri: string;
+    thumbnail: string | null;
 }
 export declare type Strategy = "SCRAPE" | "API";
 export interface SpotifyTrack {
     artists: ArtistsEntity[];
     name: string;
     duration_ms: number;
+    external_urls: {
+        spotify: string;
+    };
+    album: {
+        images: spotifyThumbnail[];
+    };
+}
+export interface spotifyThumbnail {
+    height: number;
+    url: string;
+    width: number;
 }
 export interface Album {
     name: string;

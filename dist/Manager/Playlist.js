@@ -58,6 +58,22 @@ class PlaylistManager {
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name };
             }
         }
+        if (this.plugin.options?.stragery === "API") {
+            const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
+            const tracks = playlist.tracks.items.filter(x => x.track != null).map(item => resolver_1.default.buildUnresolved(item.track));
+            let next = playlist.tracks.next, page = 1;
+            while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
+                const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
+                tracks.push(...nextPage.items.filter(x => x.track != null).map(item => resolver_1.default.buildUnresolved(item.track)));
+                next = nextPage.next;
+                page++;
+            }
+            this.cache.set(id, {
+                tracks,
+                name: playlist.name
+            });
+            return { tracks, name: playlist.name };
+        }
         const tracks = await (0, spotify_url_info_1.getTracks)(url);
         const metaData = await (0, spotify_url_info_1.getData)(url);
         //@ts-expect-error no typings

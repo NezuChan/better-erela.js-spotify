@@ -33,7 +33,7 @@ class TrackManager {
             return { tracks: unresolvedTrack };
         }
         if (this.plugin.options?.stragery === "API") {
-            const data = await this.plugin.resolver.makeRequest(`${this.plugin.resolver.BASE_URL}/tracks/${id}`);
+            const data = await this.plugin.resolver.makeRequest(`/tracks/${id}`);
             const track = resolver_1.default.buildUnresolved(data);
             return { tracks: [track] };
         }
