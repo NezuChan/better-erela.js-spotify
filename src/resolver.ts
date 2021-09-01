@@ -17,14 +17,16 @@ export default class resolver {
     public token!: string;
     public BASE_URL = "https://api.spotify.com/v1";
 
-    public static buildUnresolved(track: Tracks | SpotifyTrack) { 
+    public static buildUnresolved(track: Tracks | SpotifyTrack) {
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
         if (typeof track.name !== "string") throw new TypeError(`The track name must be a string, received type ${typeof track.name}`);
         return {
             title: track.name,
             author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
-            duration: track.duration_ms
+            duration: track.duration_ms,
+            uri: track.external_urls.spotify,
+            thumbnail: (track as SpotifyTrack)?.album?.images[0]?.url ?? null
         }
     }
 
