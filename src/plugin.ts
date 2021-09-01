@@ -136,6 +136,7 @@ export class Spotify extends Plugin {
                                     title: oldTrackTitle,
                                     uri: oldTrackUri
                                 })
+                                Object.freeze(track);
                             } catch {
                                 return null;
                             }
