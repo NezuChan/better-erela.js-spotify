@@ -149,14 +149,15 @@ export abstract class TrackUtils extends TrackUtilsOri {
             async resolve(): Promise<void> {
                  //@ts-expect-error
                 const resolved = await TrackUtils.getClosestTrack(this)
+                 //@ts-expect-error
+                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
                 Object.assign(resolved, {
                     title: (query as UnresolvedSpotifyTrack).title,
                     thumbnail: (query as UnresolvedSpotifyTrack).thumbnail,
                     uri: (query as UnresolvedSpotifyTrack).uri
                 })
-                 //@ts-expect-error
-                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
                 Object.assign(this, resolved);
+                
             }
         };
 
