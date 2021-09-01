@@ -67,6 +67,7 @@ export interface SpotifyTrack {
     external_urls: {
         spotify: string;
     };
+    images: spotifyThumbnail[]
     album: {
         images: spotifyThumbnail[]
     }
