@@ -125,22 +125,23 @@ export class Spotify extends Plugin {
                     const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
                     const tracks = await Promise.all(data.tracks.map(async query => {
                         const track = TrackUtils.buildUnresolved(query, requester);
+                        const oldTrackThumbnail = track.thumbnail;
+                        const oldTrackTitle = track.title;
+                        const oldTrackUri = track.uri;
+                                
                         if (this.options?.convertUnresolved) {
                             try {
-                                const oldTrackThumbnail = track.thumbnail;
-                                const oldTrackTitle = track.title;
-                                const oldTrackUri = track.uri;
                                 await track.resolve();
-                                Object.assign(track, {
-                                    thumbnail: oldTrackThumbnail,
-                                    title: oldTrackTitle,
-                                    uri: oldTrackUri
-                                })
-                                Object.freeze(track);
+                                
                             } catch {
                                 return null;
                             }
                         }
+                        Object.assign(track, {
+                           thumbnail: oldTrackThumbnail,
+                           title: oldTrackTitle,
+                           uri: oldTrackUri
+                        })
                         return track;
                     }).filter(track => !!track));
                     //@ts-expect-error type mabok
