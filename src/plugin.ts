@@ -109,6 +109,7 @@ export class Spotify extends Plugin {
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
+        TrackUtils.init(manager);
     }
 
     private async search(query: string | SearchQuery, requester?: unknown): Promise<SearchResult> {
