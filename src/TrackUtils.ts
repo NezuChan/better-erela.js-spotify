@@ -82,59 +82,6 @@ export abstract class TrackUtils extends TrackUtilsOri {
     }
 
     /**
-     * Builds a Track from the raw data from Lavalink and a optional requester.
-     * @param data
-     * @param requester
-     */
-    static build(data: TrackData, requester?: unknown): Track {
-        if (typeof data === "undefined")
-            throw new RangeError('Argument "data" must be present.');
-
-        try {
-            const track: Track = {
-                track: data.track,
-                title: data.info.title,
-                identifier: data.info.identifier,
-                author: data.info.author,
-                duration: data.info.length,
-                isSeekable: data.info.isSeekable,
-                isStream: data.info.isStream,
-                uri: data.info.uri,
-                thumbnail: data.info.uri.includes("youtube")
-                    ? `https://img.youtube.com/vi/${data.info.identifier}/default.jpg`
-                    : null,
-                 //@ts-expect-error
-                displayThumbnail(size = "default"): string | null {
-                    const finalSize = SIZES.find((s) => s === size) ?? "default";
-                    return this.uri.includes("youtube")
-                        ? `https://img.youtube.com/vi/${data.info.identifier}/${finalSize}.jpg`
-                        : null;
-                },
-                requester,
-            };
-
-            track.displayThumbnail = track.displayThumbnail.bind(track);
-
-            if (this.trackPartial) {
-                for (const key of Object.keys(track)) {
-                    if (this.trackPartial.includes(key)) continue;
-                     //@ts-expect-error
-                    delete track[key];
-                }
-            }
-
-            Object.defineProperty(track, TRACK_SYMBOL, {
-                configurable: true,
-                value: true
-            });
-
-            return track;
-        } catch (error) {
-            throw new RangeError(`Argument "data" is not a valid track: ${error.message}`);
-        }
-    }
-
-    /**
      * Builds a UnresolvedTrack to be resolved before being played  .
      * @param query
      * @param requester
