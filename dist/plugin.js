@@ -92,6 +92,7 @@ class Spotify extends erela_js_1.Plugin {
                                     title: oldTrackTitle,
                                     uri: oldTrackUri
                                 });
+                                Object.freeze(track);
                             }
                             catch {
                                 return null;
