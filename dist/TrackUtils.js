@@ -132,13 +132,13 @@ class TrackUtils extends erela_js_1.TrackUtils {
             async resolve() {
                 //@ts-expect-error
                 const resolved = await TrackUtils.getClosestTrack(this);
+                //@ts-expect-error
+                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
                 Object.assign(resolved, {
                     title: query.title,
                     thumbnail: query.thumbnail,
                     uri: query.uri
                 });
-                //@ts-expect-error
-                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
                 Object.assign(this, resolved);
             }
         };
