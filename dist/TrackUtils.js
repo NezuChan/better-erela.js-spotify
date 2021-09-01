@@ -30,6 +30,56 @@ class TrackUtils extends erela_js_1.TrackUtils {
         this.trackPartial = partial;
     }
     /**
+   * Builds a Track from the raw data from Lavalink and a optional requester.
+   * @param data
+   * @param requester
+   */
+    static build(data, requester) {
+        if (typeof data === "undefined")
+            throw new RangeError('Argument "data" must be present.');
+        try {
+            const track = {
+                track: data.track,
+                title: data.info.title,
+                identifier: data.info.identifier,
+                author: data.info.author,
+                duration: data.info.length,
+                isSeekable: data.info.isSeekable,
+                isStream: data.info.isStream,
+                uri: data.info.uri,
+                thumbnail: data.info.uri.includes("youtube")
+                    ? `https://img.youtube.com/vi/${data.info.identifier}/default.jpg`
+                    : null,
+                //@ts-ignore
+                displayThumbnail(size = "default") {
+                    const finalSize = SIZES.find((s) => s === size) ?? "default";
+                    return this.uri.includes("youtube")
+                        ? `https://img.youtube.com/vi/${data.info.identifier}/${finalSize}.jpg`
+                        : null;
+                },
+                requester,
+            };
+            track.displayThumbnail = track.displayThumbnail.bind(track);
+            if (this.trackPartial) {
+                for (const key of Object.keys(track)) {
+                    if (this.trackPartial.includes(key))
+                        continue;
+                    //@ts-ignore
+                    delete track[key];
+                }
+            }
+            Object.defineProperty(track, TRACK_SYMBOL, {
+                configurable: true,
+                value: true
+            });
+            return track;
+        }
+        catch (error) {
+            //@ts-ignore
+            throw new RangeError(`Argument "data" is not a valid track: ${error.message}`);
+        }
+    }
+    /**
      * Checks if the provided argument is a valid Track or UnresolvedTrack, if provided an array then every element will be checked.
      * @param trackOrTracks
      */

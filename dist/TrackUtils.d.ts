@@ -1,10 +1,16 @@
-import { Manager, Track, UnresolvedQuery, UnresolvedTrack, TrackUtils as TrackUtilsOri } from "erela.js";
+import { Manager, TrackData, Track, UnresolvedQuery, UnresolvedTrack, TrackUtils as TrackUtilsOri } from "erela.js";
 export declare abstract class TrackUtils extends TrackUtilsOri {
     static trackPartial: string[] | null;
     private static manager;
     /** @hidden */
     static init(manager: Manager): void;
     static setTrackPartial(partial: string[]): void;
+    /**
+   * Builds a Track from the raw data from Lavalink and a optional requester.
+   * @param data
+   * @param requester
+   */
+    static build(data: TrackData, requester?: unknown): Track;
     /**
      * Checks if the provided argument is a valid Track or UnresolvedTrack, if provided an array then every element will be checked.
      * @param trackOrTracks
