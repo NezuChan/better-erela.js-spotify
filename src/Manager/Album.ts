@@ -15,7 +15,7 @@ export class AlbumManager {
     public async fetch(url: string, id: string) {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id)) return this.cache.get(id)!;
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const album = await this.plugin.resolver.makeRequest<Album>(`/albums/${id}`)
                 const tracks = album.tracks.items.filter(x => x != null).map(item => resolver.buildUnresolved(item));
                 let next = album.tracks.next, page = 1;
@@ -41,7 +41,7 @@ export class AlbumManager {
             })
             return { tracks: unresolvedAlbumTracks, name: metaData.name }
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const album = await this.plugin.resolver.makeRequest<Album>(`/albums/${id}`)
             const tracks = album.tracks.items.filter(x => x != null).map(item => resolver.buildUnresolved(item));
             let next = album.tracks.next, page = 1;

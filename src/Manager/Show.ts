@@ -15,7 +15,7 @@ export class ShowManager {
     public async fetch(url: string, id: string) {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id)) return this.cache.get(id)!;
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const show = await this.plugin.resolver.makeRequest<Show>(`/shows/${id}?market=US`)
                 const tracks = show.episodes.items.filter(x => x != null).map(item => resolver.buildUnresolved(item));
                 let next = show.episodes.next, page = 1
@@ -41,7 +41,7 @@ export class ShowManager {
             })
             return { tracks: unresolvedShowTracks, name: metaData.name }
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const show = await this.plugin.resolver.makeRequest<Show>(`/shows/${id}?market=US`)
         
             const tracks = show.episodes.items.filter(x => x != null).map(item => resolver.buildUnresolved(item));

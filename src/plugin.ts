@@ -20,17 +20,17 @@ const check = (options?: SpotifyOptions) => {
         );
     }
     if (
-        typeof options?.stragery !== "undefined" &&
-        typeof options?.stragery !== "string"
+        typeof options?.strategy !== "undefined" &&
+        typeof options?.strategy !== "string"
     ) {
         throw new TypeError(
-            "Spotify option \"stragery\" must be a string.",
+            "Spotify option \"strategy\" must be a string.",
         );
     }
 
     if (
-        typeof options?.stragery !== "undefined" &&
-        options?.stragery === "API" &&
+        typeof options?.strategy !== "undefined" &&
+        options?.strategy === "API" &&
         !options?.clientSecret
     ) {
         throw new TypeError(
@@ -38,8 +38,8 @@ const check = (options?: SpotifyOptions) => {
         );
     }
     if (
-        typeof options?.stragery !== "undefined" &&
-        options?.stragery === "API" &&
+        typeof options?.strategy !== "undefined" &&
+        options?.strategy === "API" &&
         !options?.clientId
     ) {
         throw new TypeError(
@@ -100,7 +100,7 @@ export class Spotify extends Plugin {
         this.options = {
             ...options,
         };
-        if (this.options?.stragery === "API") {
+        if (this.options?.strategy === "API") {
             this.resolver.requestToken()
         }
     }

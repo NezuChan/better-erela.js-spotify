@@ -15,7 +15,7 @@ export class TrackManager {
     public async fetch(url: string, id: string) {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id)) return { tracks: this.cache.get(id)! };
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/tracks/${id}`);
                 const track = resolver.buildUnresolved(data);
                 this.cache.set(id, [track])
@@ -27,7 +27,7 @@ export class TrackManager {
             return { tracks: unresolvedTrack! }
         }
         
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/tracks/${id}`);
             const track = resolver.buildUnresolved(data);
             return { tracks: [track] };

@@ -15,7 +15,7 @@ export class ArtistManager {
     public async fetch(url: string, id: string) {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id)) return this.cache.get(id)!;
-            if (this.plugin.options.stragery === "API") {
+            if (this.plugin.options.strategy === "API") {
                 const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
                 const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
                 const tracks = playlist.tracks.filter(x => x != null).map(item => resolver.buildUnresolved(item));
@@ -34,7 +34,7 @@ export class ArtistManager {
             })
             return { tracks: unresolvedAlbumTracks, name: metaData.name }
         }
-        if (this.plugin.options?.stragery === "API") {
+        if (this.plugin.options?.strategy === "API") {
             const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
             const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
             const tracks = playlist.tracks.filter(x => x != null).map(item => resolver.buildUnresolved(item));
