@@ -69,6 +69,7 @@ class Spotify extends erela_js_1.Plugin {
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
+        TrackUtils_1.TrackUtils.init(manager);
     }
     async search(query, requester) {
         const finalQuery = query.query || query;
