@@ -70,13 +70,14 @@ export default class resolver {
     }
 
     public buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack {
-        let unresolvedTrack = TrackUtils.buildUnresolved(track, requester)
-        unresolvedTrack.resolve = async () => {
-            const resolved = await this.resolve(unresolvedTrack, requester);
-            //@ts-ignore
-            delete unresolvedTrack.resolve;
-            Object.assign(unresolvedTrack, resolved)
-            console.log(resolved)
+        let unresolvedTrack = TrackUtils.buildUnresolved(track, requester);
+        if (this.plugin.options?.useSpotifyMetadata) {
+            Object.assign(unresolvedTrack, {
+                title: unresolvedTrack.title,
+                author: unresolvedTrack.author,
+                uri: unresolvedTrack.uri,
+                thumbnail: unresolvedTrack.thumbnail,
+            });
         }
         return unresolvedTrack as UnresolvedTrack;
     }
@@ -92,7 +93,7 @@ export default class resolver {
                     title: unresolvedTrack.title,
                     author: unresolvedTrack.author,
                     uri: unresolvedTrack.uri,
-                    thumbnail: unresolvedTrack.thumbnail
+                    thumbnail: unresolvedTrack.thumbnail,
                 });
             }
             if(this.plugin.options?.cacheTrack) this.cache.set(unresolvedTrack.identifier!, resolvedTrack)
