@@ -63,7 +63,7 @@ class resolver {
     }
     async retrieveTrack(unresolvedTrack) {
         const params = new URLSearchParams({
-            identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`
+            identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title}`
         });
         const node = this.plugin.manager?.leastUsedNodes.first();
         const res = await node.makeRequest(`/loadtracks?${params.toString()}`);
