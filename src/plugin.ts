@@ -2,7 +2,8 @@ import {
     Manager,
     Plugin,
     SearchQuery,
-    SearchResult
+    SearchResult,
+    TrackUtils
 } from "erela.js";
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
@@ -123,11 +124,7 @@ export class Spotify extends Plugin {
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
                     const tracks = await Promise.all(data.tracks.map(async (query: any) => {
-                        const track = this.resolver.buildUnresolved(query, requester);
-                        const oldTrackThumbnail = track.thumbnail;
-                        const oldTrackTitle = track.title;
-                        const oldTrackUri = track.uri;
-                                
+                        const track = this.resolver.buildUnresolved(query, requester);      
                         if (this.options?.convertUnresolved) {
                             try {
                                 await track.resolve();

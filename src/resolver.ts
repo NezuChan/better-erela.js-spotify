@@ -1,11 +1,10 @@
-import { UnresolvedTrack, LoadType, ModifyRequest, TrackUtils, Track } from "erela.js";
+import { UnresolvedTrack, LoadType, ModifyRequest, Structure, Track, LavalinkResult, TrackUtils } from "erela.js";
 import { Tracks } from "spotify-url-info";
 import { SearchResult, SpotifyTrack, UnresolvedSpotifyTrack } from "./typings";
 import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
 import Spotify from './index';
 import fetch from 'petitio';
 import Collection from "@discordjs/collection";
-
 export default class resolver {
     constructor(public plugin: Spotify) {
         if (plugin.options?.maxCacheLifeTime) {
@@ -24,7 +23,6 @@ export default class resolver {
     public token!: string;
     public BASE_URL = "https://api.spotify.com/v1";
     public cache: Collection<string, UnresolvedTrack | Track> = new Collection();
-    public UNRESOLVED_TRACK_SYMBOL = Symbol("unresolved")
     public static buildUnresolved(track: Tracks | SpotifyTrack) {
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
@@ -63,48 +61,43 @@ export default class resolver {
     }
 
     private async retrieveTrack(unresolvedTrack: Partial<UnresolvedTrack>, requester?: unknown) {
-        const response = await this.plugin.manager?.search(`${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`, requester)!
-        return response.tracks[0];
+        const params = new URLSearchParams({
+            identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`
+        });
+        const node = this.plugin.manager?.leastUsedNodes.first()!
+        const res = await node.makeRequest<LavalinkResult>(`/loadtracks?${params.toString()}`)
+        return res.tracks[0];
     }
 
     public buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack {
-        
         const _this = this; // eslint-disable-line
-        let unresolvedTrack: Partial<UnresolvedTrack> = {
-            requester,
-            async resolve(): Promise<void> {
-                const resolved = await _this.resolveTrack(this)
-                //@ts-ignore
-                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
-                Object.assign(this, resolved);
-            }
-        };
-        Object.defineProperty(unresolvedTrack, this.UNRESOLVED_TRACK_SYMBOL, {
-            configurable: true,
-            value: true
-        });
-
-        if (typeof track === "string") unresolvedTrack.title = track;
-        else unresolvedTrack = { ...unresolvedTrack, ...track }
+        let unresolvedTrack = TrackUtils.buildUnresolved(track, requester)
+        unresolvedTrack.resolve = async () => {
+            const resolved = await _this.resolve(unresolvedTrack, requester);
+            //@ts-ignore
+            Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
+            Object.assign(unresolvedTrack, resolved);
+        }
         return unresolvedTrack as UnresolvedTrack;
     }
 
-    private async resolveTrack(unresolvedTrack: Partial<UnresolvedTrack>, requester?: unknown) {
-        if (this.cache.has(unresolvedTrack.identifier!)) return this.cache.get(unresolvedTrack.identifier!);
-
-        const lavaTrack = await this.retrieveTrack(unresolvedTrack, requester);
-        if (lavaTrack) {
+    public async resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown) {
+        const cached = this.cache.get(unresolvedTrack.identifier!);
+        if (cached) return cached
+        const lavaTrack = await this.retrieveTrack(unresolvedTrack);
+        const resolvedTrack = TrackUtils.build(lavaTrack, requester)
+        if (resolvedTrack) {
             if (this.plugin.options?.useSpotifyMetadata) {
-                Object.assign(lavaTrack, {
+                Object.assign(resolvedTrack, {
                     title: unresolvedTrack.title,
                     author: unresolvedTrack.author,
                     uri: unresolvedTrack.uri,
                     thumbnail: unresolvedTrack.thumbnail
                 });
             }
-            if (this.plugin.options?.cacheTrack) this.cache.set(lavaTrack.identifier, Object.freeze(lavaTrack));
+            if(this.plugin.options?.cacheTrack) this.cache.set(unresolvedTrack.identifier!, resolvedTrack)
         }
-        return lavaTrack;
+        return resolvedTrack;
     }
 
     public async requestToken(): Promise<void> {
