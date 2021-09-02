@@ -73,6 +73,8 @@ class resolver {
         let unresolvedTrack = erela_js_1.TrackUtils.buildUnresolved(track, requester);
         unresolvedTrack.resolve = async () => {
             const resolved = await this.resolve(unresolvedTrack, requester);
+            //@ts-ignore
+            delete unresolvedTrack.resolve;
             Object.assign(unresolvedTrack, resolved);
             console.log(resolved);
         };
