@@ -16,7 +16,7 @@ export default class resolver {
     private nextRequest?;
     token: string;
     BASE_URL: string;
-    cache: Collection<string, UnresolvedTrack | Track>;
+    cache: Collection<string, Track>;
     static buildUnresolved(track: Tracks | SpotifyTrack): {
         title: string;
         author: string;
@@ -28,6 +28,6 @@ export default class resolver {
     makeRequest<T>(endpoint: string, modify?: ModifyRequest): Promise<T>;
     private retrieveTrack;
     buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack;
-    resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown): Promise<UnresolvedTrack | Track>;
+    resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown): Promise<Track>;
     requestToken(): Promise<void>;
 }

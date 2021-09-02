@@ -61,7 +61,7 @@ class resolver {
         modify(req);
         return req.json();
     }
-    async retrieveTrack(unresolvedTrack, requester) {
+    async retrieveTrack(unresolvedTrack) {
         const params = new URLSearchParams({
             identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`
         });
@@ -70,13 +70,11 @@ class resolver {
         return res.tracks[0];
     }
     buildUnresolved(track, requester) {
-        const _this = this; // eslint-disable-line
         let unresolvedTrack = erela_js_1.TrackUtils.buildUnresolved(track, requester);
         unresolvedTrack.resolve = async () => {
-            const resolved = await _this.resolve(unresolvedTrack, requester);
-            //@ts-ignore
-            Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
+            const resolved = await this.resolve(unresolvedTrack, requester);
             Object.assign(unresolvedTrack, resolved);
+            console.log(resolved);
         };
         return unresolvedTrack;
     }
@@ -86,7 +84,7 @@ class resolver {
             return cached;
         const lavaTrack = await this.retrieveTrack(unresolvedTrack);
         const resolvedTrack = erela_js_1.TrackUtils.build(lavaTrack, requester);
-        if (resolvedTrack) {
+        if (lavaTrack) {
             if (this.plugin.options?.useSpotifyMetadata) {
                 Object.assign(resolvedTrack, {
                     title: unresolvedTrack.title,
