@@ -1,17 +1,11 @@
-import { UnresolvedTrack, LoadType, ModifyRequest, Structure, Track, LavalinkResult, TrackUtils } from "erela.js";
+import { UnresolvedTrack, LoadType, ModifyRequest, Track, LavalinkResult, TrackUtils } from "erela.js";
 import { Tracks } from "spotify-url-info";
 import { SearchResult, SpotifyTrack, UnresolvedSpotifyTrack } from "./typings";
 import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
 import Spotify from './index';
 import fetch from 'petitio';
-import Collection from "@discordjs/collection";
 export default class resolver {
     constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear()
-            }, this.plugin.options?.maxCacheLifeTime)
-        }
     }
     public getTrack = new TrackManager(this.plugin);
     public getPlaylist = new PlaylistManager(this.plugin);
@@ -22,7 +16,6 @@ export default class resolver {
     private nextRequest?: NodeJS.Timeout;
     public token!: string;
     public BASE_URL = "https://api.spotify.com/v1";
-    public cache: Collection<string, Track> = new Collection();
     public static buildUnresolved(track: Tracks | SpotifyTrack) {
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
@@ -83,8 +76,6 @@ export default class resolver {
     }
 
     public async resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown) {
-        const cached = this.cache.get(unresolvedTrack.identifier!);
-        if (cached) return cached;
         const lavaTrack = await this.retrieveTrack(unresolvedTrack);
         const resolvedTrack = TrackUtils.build(lavaTrack, requester)
         if (lavaTrack) {
@@ -96,7 +87,6 @@ export default class resolver {
                     thumbnail: unresolvedTrack.thumbnail,
                 });
             }
-            if(this.plugin.options?.cacheTrack) this.cache.set(unresolvedTrack.identifier!, resolvedTrack)
         }
         return resolvedTrack;
     }
