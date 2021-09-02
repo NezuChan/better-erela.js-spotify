@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const erela_js_1 = require("erela.js");
 const Manager_1 = require("./Manager");
 const petitio_1 = __importDefault(require("petitio"));
-const collection_1 = __importDefault(require("@discordjs/collection"));
 class resolver {
     constructor(plugin) {
         this.plugin = plugin;
@@ -17,12 +16,6 @@ class resolver {
         this.getShow = new Manager_1.ShowManager(this.plugin);
         this.getEpisode = new Manager_1.EpisodeManager(this.plugin);
         this.BASE_URL = "https://api.spotify.com/v1";
-        this.cache = new collection_1.default();
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, this.plugin.options?.maxCacheLifeTime);
-        }
     }
     static buildUnresolved(track) {
         if (!track)
@@ -82,9 +75,6 @@ class resolver {
         return unresolvedTrack;
     }
     async resolve(unresolvedTrack, requester) {
-        const cached = this.cache.get(unresolvedTrack.identifier);
-        if (cached)
-            return cached;
         const lavaTrack = await this.retrieveTrack(unresolvedTrack);
         const resolvedTrack = erela_js_1.TrackUtils.build(lavaTrack, requester);
         if (lavaTrack) {
@@ -96,8 +86,6 @@ class resolver {
                     thumbnail: unresolvedTrack.thumbnail,
                 });
             }
-            if (this.plugin.options?.cacheTrack)
-                this.cache.set(unresolvedTrack.identifier, resolvedTrack);
         }
         return resolvedTrack;
     }

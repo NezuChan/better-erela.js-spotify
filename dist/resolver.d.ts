@@ -3,7 +3,6 @@ import { Tracks } from "spotify-url-info";
 import { SearchResult, SpotifyTrack, UnresolvedSpotifyTrack } from "./typings";
 import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
 import Spotify from './index';
-import Collection from "@discordjs/collection";
 export default class resolver {
     plugin: Spotify;
     constructor(plugin: Spotify);
@@ -16,7 +15,6 @@ export default class resolver {
     private nextRequest?;
     token: string;
     BASE_URL: string;
-    cache: Collection<string, Track>;
     static buildUnresolved(track: Tracks | SpotifyTrack): {
         title: string;
         author: string;
