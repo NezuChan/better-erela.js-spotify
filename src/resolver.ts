@@ -22,7 +22,7 @@ export default class resolver {
     private nextRequest?: NodeJS.Timeout;
     public token!: string;
     public BASE_URL = "https://api.spotify.com/v1";
-    public cache: Collection<string, UnresolvedTrack | Track> = new Collection();
+    public cache: Collection<string, Track> = new Collection();
     public static buildUnresolved(track: Tracks | SpotifyTrack) {
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
@@ -60,7 +60,7 @@ export default class resolver {
         return req.json();
     }
 
-    private async retrieveTrack(unresolvedTrack: Partial<UnresolvedTrack>, requester?: unknown) {
+    private async retrieveTrack(unresolvedTrack: Partial<UnresolvedTrack>) {
         const params = new URLSearchParams({
             identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`
         });
@@ -70,23 +70,21 @@ export default class resolver {
     }
 
     public buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack {
-        const _this = this; // eslint-disable-line
         let unresolvedTrack = TrackUtils.buildUnresolved(track, requester)
         unresolvedTrack.resolve = async () => {
-            const resolved = await _this.resolve(unresolvedTrack, requester);
-            //@ts-ignore
-            Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
-            Object.assign(unresolvedTrack, resolved);
+            const resolved = await this.resolve(unresolvedTrack, requester);
+            Object.assign(unresolvedTrack, resolved)
+            console.log(resolved)
         }
         return unresolvedTrack as UnresolvedTrack;
     }
 
     public async resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown) {
         const cached = this.cache.get(unresolvedTrack.identifier!);
-        if (cached) return cached
+        if (cached) return cached;
         const lavaTrack = await this.retrieveTrack(unresolvedTrack);
         const resolvedTrack = TrackUtils.build(lavaTrack, requester)
-        if (resolvedTrack) {
+        if (lavaTrack) {
             if (this.plugin.options?.useSpotifyMetadata) {
                 Object.assign(resolvedTrack, {
                     title: unresolvedTrack.title,
