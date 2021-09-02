@@ -2,8 +2,7 @@ import {
     Manager,
     Plugin,
     SearchQuery,
-    SearchResult,
-    TrackUtils
+    SearchResult
 } from "erela.js";
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
@@ -123,8 +122,8 @@ export class Spotify extends Plugin {
                     const data: Result = await func.fetch(finalQuery, id);
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
-                    const tracks = await Promise.all(data.tracks.map(async query => {
-                        const track = TrackUtils.buildUnresolved(query, requester);
+                    const tracks = await Promise.all(data.tracks.map(async (query: any) => {
+                        const track = this.resolver.buildUnresolved(query, requester);
                         const oldTrackThumbnail = track.thumbnail;
                         const oldTrackTitle = track.title;
                         const oldTrackUri = track.uri;
@@ -132,16 +131,10 @@ export class Spotify extends Plugin {
                         if (this.options?.convertUnresolved) {
                             try {
                                 await track.resolve();
-                                
                             } catch {
                                 return null;
                             }
                         }
-                        Object.assign(track, {
-                           thumbnail: oldTrackThumbnail,
-                           title: oldTrackTitle,
-                           uri: oldTrackUri
-                        })
                         return track;
                     }).filter(track => !!track));
                     //@ts-expect-error type mabok

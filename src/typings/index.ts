@@ -13,7 +13,8 @@ export interface SpotifyOptions {
     showPageLimit?: number,
     playlistPageLimit?: number,
     albumPageLimit?: number,
-    maxCacheLifeTime?: number
+    maxCacheLifeTime?: number,
+    useSpotifyMetadata?: boolean
 }
 
 export interface Playlist {
