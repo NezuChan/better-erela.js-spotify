@@ -81,9 +81,6 @@ class Spotify extends erela_js_1.Plugin {
                     const name = ["playlist", "album", 'artist', 'episode', 'show'].includes(type) ? data.name : null;
                     const tracks = await Promise.all(data.tracks.map(async (query) => {
                         const track = this.resolver.buildUnresolved(query, requester);
-                        const oldTrackThumbnail = track.thumbnail;
-                        const oldTrackTitle = track.title;
-                        const oldTrackUri = track.uri;
                         if (this.options?.convertUnresolved) {
                             try {
                                 await track.resolve();

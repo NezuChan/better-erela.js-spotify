@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const erela_js_1 = require("erela.js");
 const Manager_1 = require("./Manager");
 const petitio_1 = __importDefault(require("petitio"));
 const collection_1 = __importDefault(require("@discordjs/collection"));
@@ -17,7 +18,6 @@ class resolver {
         this.getEpisode = new Manager_1.EpisodeManager(this.plugin);
         this.BASE_URL = "https://api.spotify.com/v1";
         this.cache = new collection_1.default();
-        this.UNRESOLVED_TRACK_SYMBOL = Symbol("unresolved");
         if (plugin.options?.maxCacheLifeTime) {
             setInterval(() => {
                 this.cache.clear();
@@ -62,37 +62,33 @@ class resolver {
         return req.json();
     }
     async retrieveTrack(unresolvedTrack, requester) {
-        const response = await this.plugin.manager?.search(`${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`, requester);
-        return response.tracks[0];
+        const params = new URLSearchParams({
+            identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`
+        });
+        const node = this.plugin.manager?.leastUsedNodes.first();
+        const res = await node.makeRequest(`/loadtracks?${params.toString()}`);
+        return res.tracks[0];
     }
     buildUnresolved(track, requester) {
         const _this = this; // eslint-disable-line
-        let unresolvedTrack = {
-            requester,
-            async resolve() {
-                const resolved = await _this.resolveTrack(this);
-                //@ts-ignore
-                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
-                Object.assign(this, resolved);
-            }
+        let unresolvedTrack = erela_js_1.TrackUtils.buildUnresolved(track, requester);
+        unresolvedTrack.resolve = async () => {
+            const resolved = await _this.resolve(unresolvedTrack, requester);
+            //@ts-ignore
+            Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
+            Object.assign(unresolvedTrack, resolved);
         };
-        Object.defineProperty(unresolvedTrack, this.UNRESOLVED_TRACK_SYMBOL, {
-            configurable: true,
-            value: true
-        });
-        if (typeof track === "string")
-            unresolvedTrack.title = track;
-        else
-            unresolvedTrack = { ...unresolvedTrack, ...track };
         return unresolvedTrack;
     }
-    async resolveTrack(unresolvedTrack, requester) {
-        if (this.cache.has(unresolvedTrack.identifier))
-            return this.cache.get(unresolvedTrack.identifier);
-        const lavaTrack = await this.retrieveTrack(unresolvedTrack, requester);
-        if (lavaTrack) {
+    async resolve(unresolvedTrack, requester) {
+        const cached = this.cache.get(unresolvedTrack.identifier);
+        if (cached)
+            return cached;
+        const lavaTrack = await this.retrieveTrack(unresolvedTrack);
+        const resolvedTrack = erela_js_1.TrackUtils.build(lavaTrack, requester);
+        if (resolvedTrack) {
             if (this.plugin.options?.useSpotifyMetadata) {
-                Object.assign(lavaTrack, {
+                Object.assign(resolvedTrack, {
                     title: unresolvedTrack.title,
                     author: unresolvedTrack.author,
                     uri: unresolvedTrack.uri,
@@ -100,9 +96,9 @@ class resolver {
                 });
             }
             if (this.plugin.options?.cacheTrack)
-                this.cache.set(lavaTrack.identifier, Object.freeze(lavaTrack));
+                this.cache.set(unresolvedTrack.identifier, resolvedTrack);
         }
-        return lavaTrack;
+        return resolvedTrack;
     }
     async requestToken() {
         if (this.nextRequest)

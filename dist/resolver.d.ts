@@ -17,7 +17,6 @@ export default class resolver {
     token: string;
     BASE_URL: string;
     cache: Collection<string, UnresolvedTrack | Track>;
-    UNRESOLVED_TRACK_SYMBOL: symbol;
     static buildUnresolved(track: Tracks | SpotifyTrack): {
         title: string;
         author: string;
@@ -29,6 +28,6 @@ export default class resolver {
     makeRequest<T>(endpoint: string, modify?: ModifyRequest): Promise<T>;
     private retrieveTrack;
     buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack;
-    private resolveTrack;
+    resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown): Promise<UnresolvedTrack | Track>;
     requestToken(): Promise<void>;
 }
