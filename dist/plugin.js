@@ -80,7 +80,7 @@ class Spotify extends erela_js_1.Plugin {
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = ["playlist", "album", 'artist', 'episode', 'show'].includes(type) ? data.name : null;
                     const tracks = await Promise.all(data.tracks.map(async (query) => {
-                        const track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
+                        const track = this.resolver.buildUnresolved(query, requester);
                         const oldTrackThumbnail = track.thumbnail;
                         const oldTrackTitle = track.title;
                         const oldTrackUri = track.uri;
@@ -92,11 +92,6 @@ class Spotify extends erela_js_1.Plugin {
                                 return null;
                             }
                         }
-                        Object.assign(track, {
-                            thumbnail: oldTrackThumbnail,
-                            title: oldTrackTitle,
-                            uri: oldTrackUri
-                        });
                         return track;
                     }).filter(track => !!track));
                     //@ts-expect-error type mabok

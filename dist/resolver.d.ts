@@ -1,8 +1,9 @@
-import { UnresolvedTrack, LoadType, ModifyRequest } from "erela.js";
+import { UnresolvedTrack, LoadType, ModifyRequest, Track } from "erela.js";
 import { Tracks } from "spotify-url-info";
-import { SearchResult, SpotifyTrack } from "./typings";
+import { SearchResult, SpotifyTrack, UnresolvedSpotifyTrack } from "./typings";
 import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
 import Spotify from './index';
+import Collection from "@discordjs/collection";
 export default class resolver {
     plugin: Spotify;
     constructor(plugin: Spotify);
@@ -15,6 +16,8 @@ export default class resolver {
     private nextRequest?;
     token: string;
     BASE_URL: string;
+    cache: Collection<string, UnresolvedTrack | Track>;
+    UNRESOLVED_TRACK_SYMBOL: symbol;
     static buildUnresolved(track: Tracks | SpotifyTrack): {
         title: string;
         author: string;
@@ -24,5 +27,8 @@ export default class resolver {
     };
     static buildSearch(loadType: LoadType, tracks: UnresolvedTrack[], error: string, name: string): SearchResult;
     makeRequest<T>(endpoint: string, modify?: ModifyRequest): Promise<T>;
+    private retrieveTrack;
+    buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack;
+    private resolveTrack;
     requestToken(): Promise<void>;
 }

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const Manager_1 = require("./Manager");
 const petitio_1 = __importDefault(require("petitio"));
+const collection_1 = __importDefault(require("@discordjs/collection"));
 class resolver {
     constructor(plugin) {
         this.plugin = plugin;
@@ -15,6 +16,13 @@ class resolver {
         this.getShow = new Manager_1.ShowManager(this.plugin);
         this.getEpisode = new Manager_1.EpisodeManager(this.plugin);
         this.BASE_URL = "https://api.spotify.com/v1";
+        this.cache = new collection_1.default();
+        this.UNRESOLVED_TRACK_SYMBOL = Symbol("unresolved");
+        if (plugin.options?.maxCacheLifeTime) {
+            setInterval(() => {
+                this.cache.clear();
+            }, this.plugin.options?.maxCacheLifeTime);
+        }
     }
     static buildUnresolved(track) {
         if (!track)
@@ -52,6 +60,49 @@ class resolver {
             .header("Authorization", this.token);
         modify(req);
         return req.json();
+    }
+    async retrieveTrack(unresolvedTrack, requester) {
+        const response = await this.plugin.manager?.search(`${unresolvedTrack.author} - ${unresolvedTrack.title} - topic`, requester);
+        return response.tracks[0];
+    }
+    buildUnresolved(track, requester) {
+        const _this = this; // eslint-disable-line
+        let unresolvedTrack = {
+            requester,
+            async resolve() {
+                const resolved = await _this.resolveTrack(this);
+                //@ts-ignore
+                Object.getOwnPropertyNames(this).forEach(prop => delete this[prop]);
+                Object.assign(this, resolved);
+            }
+        };
+        Object.defineProperty(unresolvedTrack, this.UNRESOLVED_TRACK_SYMBOL, {
+            configurable: true,
+            value: true
+        });
+        if (typeof track === "string")
+            unresolvedTrack.title = track;
+        else
+            unresolvedTrack = { ...unresolvedTrack, ...track };
+        return unresolvedTrack;
+    }
+    async resolveTrack(unresolvedTrack, requester) {
+        if (this.cache.has(unresolvedTrack.identifier))
+            return this.cache.get(unresolvedTrack.identifier);
+        const lavaTrack = await this.retrieveTrack(unresolvedTrack, requester);
+        if (lavaTrack) {
+            if (this.plugin.options?.useSpotifyMetadata) {
+                Object.assign(lavaTrack, {
+                    title: unresolvedTrack.title,
+                    author: unresolvedTrack.author,
+                    uri: unresolvedTrack.uri,
+                    thumbnail: unresolvedTrack.thumbnail
+                });
+            }
+            if (this.plugin.options?.cacheTrack)
+                this.cache.set(lavaTrack.identifier, Object.freeze(lavaTrack));
+        }
+        return lavaTrack;
     }
     async requestToken() {
         if (this.nextRequest)

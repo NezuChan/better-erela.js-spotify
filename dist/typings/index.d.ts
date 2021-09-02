@@ -10,6 +10,7 @@ export interface SpotifyOptions {
     playlistPageLimit?: number;
     albumPageLimit?: number;
     maxCacheLifeTime?: number;
+    useSpotifyMetadata?: boolean;
 }
 export interface Playlist {
     tracks: PlaylistTracks;
