@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Spotify = void 0;
 const erela_js_1 = require("erela.js");
 const resolver_1 = __importDefault(require("./resolver"));
-const REGEX = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
 const check = (options) => {
     if (typeof options?.convertUnresolved !== "undefined" &&
         typeof options?.convertUnresolved !== "boolean") {
@@ -48,6 +47,7 @@ class Spotify extends erela_js_1.Plugin {
         super();
         this.options = options;
         this.resolver = new resolver_1.default(this);
+        this.spotifyMatch = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
         this.functions = {
             track: this.resolver.getTrack,
             album: this.resolver.getAlbum,
@@ -71,7 +71,7 @@ class Spotify extends erela_js_1.Plugin {
     }
     async search(query, requester) {
         const finalQuery = query.query || query;
-        const [, type, id] = finalQuery.match(REGEX) ?? [];
+        const [, type, id] = finalQuery.match(this.spotifyMatch) ?? [];
         if (type in this.functions) {
             try {
                 const func = this.functions[type];
@@ -80,10 +80,10 @@ class Spotify extends erela_js_1.Plugin {
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
                     const name = ["playlist", "album", 'artist', 'episode', 'show'].includes(type) ? data.name : null;
                     const tracks = await Promise.all(data.tracks.map(async (query) => {
-                        const track = this.resolver.buildUnresolved(query, requester);
+                        let track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
                         if (this.options?.convertUnresolved) {
                             try {
-                                await track.resolve();
+                                track = await this.resolver.resolve(track, requester);
                             }
                             catch {
                                 return null;

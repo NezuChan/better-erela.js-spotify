@@ -4,6 +4,7 @@ import { SpotifyOptions } from "./typings";
 export declare class Spotify extends Plugin {
     options?: SpotifyOptions | undefined;
     readonly resolver: resolver;
+    spotifyMatch: RegExp;
     private _search;
     private readonly functions;
     manager: Manager | undefined;
