@@ -104,7 +104,7 @@ export class Spotify extends Plugin {
             ...options,
         };
         if (this.options?.strategy === "API") {
-            this.resolver.requestToken()
+            this.resolver.renew()
         }
     }
     
