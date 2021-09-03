@@ -111,5 +111,4 @@ export default class resolver {
         const expiresIn = await this.renewToken();
         setTimeout(() => this.renew(), expiresIn);
      }
-    }
 }
