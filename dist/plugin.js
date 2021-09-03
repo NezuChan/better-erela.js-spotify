@@ -61,7 +61,7 @@ class Spotify extends erela_js_1.Plugin {
             ...options,
         };
         if (this.options?.strategy === "API") {
-            this.resolver.requestToken();
+            this.resolver.renew();
         }
     }
     async load(manager) {

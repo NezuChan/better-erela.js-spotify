@@ -27,5 +27,6 @@ export default class resolver {
     private retrieveTrack;
     buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack;
     resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown): Promise<Track>;
-    requestToken(): Promise<void>;
+    renewToken(): Promise<number>;
+    renew(): Promise<void>;
 }

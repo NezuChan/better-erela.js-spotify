@@ -48,7 +48,7 @@ class resolver {
     }
     async makeRequest(endpoint, modify = () => void 0) {
         if (!this.token)
-            await this.requestToken();
+            await this.renew();
         const req = (0, petitio_1.default)(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`)
             .header("Authorization", this.token);
         modify(req);
@@ -89,35 +89,21 @@ class resolver {
         }
         return resolvedTrack;
     }
-    async requestToken() {
-        if (this.nextRequest)
-            return;
-        try {
-            const request = await (0, petitio_1.default)("https://accounts.spotify.com/api/token", "POST")
-                .header({
-                Authorization: `Basic ${Buffer.from(this.plugin.options?.clientId + ":" + this.plugin.options?.clientSecret).toString("base64")}`,
-                "Content-Type": "application/x-www-form-urlencoded"
-            }).body("grant_type=client_credentials").send();
-            if (request.statusCode === 400)
-                return Promise.reject(new Error("Invalid Spotify Client"));
-            const { access_token, token_type, expires_in } = request.json();
-            Object.defineProperty(this, "token", {
-                value: `${token_type} ${access_token}`
-            });
-            Object.defineProperty(this, "nextRequest", {
-                configurable: true,
-                value: setTimeout(() => {
-                    delete this.nextRequest;
-                    void this.requestToken();
-                }, expires_in * 1000)
-            });
+    async renewToken() {
+        const { access_token, expires_in } = await (0, petitio_1.default)("https://accounts.spotify.com/api/token", "POST")
+            .query("grant_type", "client_credentials")
+            .header("Authorization", `Basic ${Buffer.from(this.plugin.options?.clientId + ":" + this.plugin.options?.clientSecret).toString("base64")}`)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .json();
+        if (!access_token) {
+            throw new Error("Invalid Spotify client.");
         }
-        catch (e) {
-            if (e.statusCode === 400) {
-                return Promise.reject(new Error("Invalid Spotify client."));
-            }
-            await this.requestToken();
-        }
+        this.token = `Bearer ${access_token}`;
+        return expires_in * 1000;
+    }
+    async renew() {
+        const expiresIn = await this.renewToken();
+        setTimeout(() => this.renew(), expiresIn);
     }
 }
 exports.default = resolver;
