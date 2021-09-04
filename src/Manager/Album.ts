@@ -2,7 +2,7 @@ import Collection from "@discordjs/collection";
 import { getData, getTracks } from "spotify-url-info";
 import Spotify from '../index';
 import resolver from "../resolver";
-import { Album, AlbumTracks, UnresolvedSpotifyTrack } from "../typings";
+import { Album, UnresolvedSpotifyTrack } from "../typings";
 export class AlbumManager {
     public cache: Collection<string, AlbumCache> = new Collection();
     public constructor(public plugin: Spotify) {
@@ -21,9 +21,9 @@ export class AlbumManager {
                 let next = album.tracks.next, page = 1;
 
                 while (next && (!this.plugin.options.albumPageLimit ? true : page < this.plugin.options.albumPageLimit!)) {
-                    const nextPage = await this.plugin.resolver.makeRequest<AlbumTracks>(next!.split("v1")[1]);
-                    tracks.push(...nextPage.items.filter(x => x != null).map(item => resolver.buildUnresolved(item)));
-                    next = nextPage.next;
+                    const nextPage = await this.plugin.resolver.makeRequest<Album>(next!.split("v1")[1]);
+                    tracks.push(...nextPage.tracks.items.filter(x => x != null).map(item => resolver.buildUnresolved(item)));
+                    next = nextPage.tracks.next;
                     page++;
                 }
                 this.cache.set(id, {
@@ -47,9 +47,9 @@ export class AlbumManager {
             let next = album.tracks.next, page = 1;
 
             while (next && (!this.plugin.options?.albumPageLimit ? true : page < this.plugin.options.albumPageLimit!)) {
-                const nextPage = await this.plugin.resolver.makeRequest<AlbumTracks>(next!.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x != null).map(item => resolver.buildUnresolved(item)));
-                next = nextPage.next;
+                const nextPage = await this.plugin.resolver.makeRequest<Album>(next!.split("v1")[1]);
+                tracks.push(...nextPage.tracks.items.filter(x => x != null).map(item => resolver.buildUnresolved(item)));
+                next = nextPage.tracks.next;
                 page++;
             }
             return { tracks, name: album.name };
