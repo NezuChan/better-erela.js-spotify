@@ -15,8 +15,8 @@ jobs:
         with:
           node-version: "12"
       - run: |
-          git fetch origin master
-          git checkout master
+          git fetch origin main
+          git checkout main
       - name: Installing dependencies
         run: yarn install --frozen-lockfile
       - name: Generating docs
