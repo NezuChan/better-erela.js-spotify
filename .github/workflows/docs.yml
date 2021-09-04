@@ -1,9 +1,9 @@
 name: Generate docs
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - "main"
 
 jobs:
   generate:
@@ -18,7 +18,7 @@ jobs:
           git fetch origin main
           git checkout main
       - name: Installing dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
       - name: Generating docs
         run: yarn docs
       - name: Force add docs
@@ -29,5 +29,5 @@ jobs:
           git config user.email "${{ github.actor }}@users.noreply.github.com"
       - name: Commit and push
         run: |
-          git commit -m "chore(build-docs): from ${{ github.sha }}" || true
-          git push origin main
+          git commit -m "docs: from ${{ github.sha }}" || true
+           git push origin ${{ github.ref }} || true
