@@ -27,8 +27,8 @@ class AlbumManager {
                 let next = album.tracks.next, page = 1;
                 while (next && (!this.plugin.options.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
                     const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                    tracks.push(...nextPage.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item)));
-                    next = nextPage.next;
+                    tracks.push(...nextPage.tracks.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item)));
+                    next = nextPage.tracks.next;
                     page++;
                 }
                 this.cache.set(id, {
@@ -52,8 +52,8 @@ class AlbumManager {
             let next = album.tracks.next, page = 1;
             while (next && (!this.plugin.options?.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
                 const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item)));
-                next = nextPage.next;
+                tracks.push(...nextPage.tracks.items.filter(x => x != null).map(item => resolver_1.default.buildUnresolved(item)));
+                next = nextPage.tracks.next;
                 page++;
             }
             return { tracks, name: album.name };
