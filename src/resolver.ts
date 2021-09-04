@@ -17,6 +17,7 @@ export default class resolver {
     private nextRequest?: NodeJS.Timeout;
     public token!: string;
     public BASE_URL = "https://api.spotify.com/v1";
+
     public static buildUnresolved(track: Tracks | SpotifyTrack) {
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
@@ -26,7 +27,7 @@ export default class resolver {
             author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
             duration: track.duration_ms,
             uri: track.external_urls.spotify,
-            thumbnail: (track as SpotifyTrack).images ? (track as SpotifyTrack)?.images[0]?.url ?? null : (track as SpotifyTrack).album.images[0].url ?? null
+            thumbnail: (track as SpotifyTrack)?.images ? (track as SpotifyTrack)?.images[0]?.url ?? null : (track as SpotifyTrack).album?.images[0].url ?? null
         }
     }
 
