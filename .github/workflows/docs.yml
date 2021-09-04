@@ -18,7 +18,9 @@ jobs:
           git fetch origin main
           git checkout main
       - name: Installing dependencies
-        run: yarn install
+        run: | 
+           yarn install
+           yarn add typedoc
       - name: Generating docs
         run: yarn docs
       - name: Force add docs
