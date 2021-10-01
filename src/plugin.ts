@@ -4,8 +4,6 @@ import {
     SearchQuery,
     SearchResult,
     TrackUtils,
-    Track,
-    UnresolvedTrack
 } from "erela.js";
 import resolver from "./resolver";
 import { Result, SpotifyOptions } from "./typings";
@@ -125,12 +123,12 @@ export class Spotify extends Plugin {
                 if (func) {
                     const data: Result = await func.fetch(finalQuery, id);
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
-                    const name = [ "playlist", "album", 'artist', 'episode', 'show' ].includes(type) ? data.name : null;
-                    const tracks = await Promise.all(data.tracks.map(async (query: any) => {
-                        let track = TrackUtils.buildUnresolved(query, requester);      
+                    const name = ["playlist", "album", "artist", "episode", "show"].includes(type) ? data.name : null;
+                    const tracks = await Promise.all(data.tracks.map(async query => {
+                        let track = TrackUtils.buildUnresolved(query, requester);
                         if (this.options?.convertUnresolved) {
                             try {
-                                track = await this.resolver.resolve(track, requester) as UnresolvedTrack
+                            await track.resolve()
                             } catch {
                                 return null;
                             }
