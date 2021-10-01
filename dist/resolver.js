@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const erela_js_1 = require("erela.js");
 const Manager_1 = require("./Manager");
 const petitio_1 = __importDefault(require("petitio"));
 class resolver {
@@ -25,11 +24,11 @@ class resolver {
         if (typeof track.name !== "string")
             throw new TypeError(`The track name must be a string, received type ${typeof track.name}`);
         return {
-            title: track.name,
+            title: track?.name,
             author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
             duration: track.duration_ms,
             uri: track.external_urls.spotify,
-            thumbnail: track?.images ? track?.images[0]?.url ?? null : track.album?.images[0].url ?? null
+            thumbnail: track?.images ? track?.images[0]?.url ?? null : track.album?.images[0]?.url ?? null
         };
     }
     static buildSearch(loadType, tracks, error, name) {
@@ -53,41 +52,6 @@ class resolver {
             .header("Authorization", this.token);
         modify(req);
         return req.json();
-    }
-    async retrieveTrack(unresolvedTrack) {
-        const params = new URLSearchParams({
-            identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title}`
-        });
-        const node = this.plugin.manager?.leastUsedNodes.first();
-        const res = await node.makeRequest(`/loadtracks?${params.toString()}`);
-        return res.tracks[0];
-    }
-    buildUnresolved(track, requester) {
-        let unresolvedTrack = erela_js_1.TrackUtils.buildUnresolved(track, requester);
-        if (this.plugin.options?.useSpotifyMetadata) {
-            Object.assign(unresolvedTrack, {
-                title: unresolvedTrack.title,
-                author: unresolvedTrack.author,
-                uri: unresolvedTrack.uri,
-                thumbnail: unresolvedTrack.thumbnail,
-            });
-        }
-        return unresolvedTrack;
-    }
-    async resolve(unresolvedTrack, requester) {
-        const lavaTrack = await this.retrieveTrack(unresolvedTrack);
-        const resolvedTrack = erela_js_1.TrackUtils.build(lavaTrack, requester);
-        if (lavaTrack) {
-            if (this.plugin.options?.useSpotifyMetadata) {
-                Object.assign(resolvedTrack, {
-                    title: unresolvedTrack.title,
-                    author: unresolvedTrack.author,
-                    uri: unresolvedTrack.uri,
-                    thumbnail: unresolvedTrack.thumbnail,
-                });
-            }
-        }
-        return resolvedTrack;
     }
     async renewToken() {
         const { access_token, expires_in } = await (0, petitio_1.default)("https://accounts.spotify.com/api/token", "POST")
