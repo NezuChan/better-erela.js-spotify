@@ -17,12 +17,12 @@ export class PlaylistManager {
             if (this.cache.has(id)) return this.cache.get(id)!;
             if (this.plugin.options.strategy === "API") {
                 const playlist = await this.plugin.resolver.makeRequest<Playlist>(`/playlists/${id}`);
-                const tracks = playlist.tracks.items.filter(x => x.track != null).map(item => resolver.buildUnresolved(item.track));
+                const tracks = playlist.tracks.items.filter(x => x.track != null && x.track.name).map(item => resolver.buildUnresolved(item.track));
                 let next = playlist.tracks.next, page = 1;
 
                 while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit!)) {
                     const nextPage = await this.plugin.resolver.makeRequest<PlaylistTracks>(next!.split("v1")[1]);
-                    tracks.push(...nextPage.items.filter(x => x.track != null).map(item => resolver.buildUnresolved(item.track)));
+                    tracks.push(...nextPage.items.filter(x => x.track != null && x.track.name).map(item => resolver.buildUnresolved(item.track)));
                     next = nextPage.next;
                     page++;
                 }
@@ -38,14 +38,14 @@ export class PlaylistManager {
             //@ts-expect-error no typings
             if (typeof tracks[0].track === "object") {
                 //@ts-expect-error no typings
-                const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver.buildUnresolved(track.track)) ?? [];
+                const unresolvedPlaylistTracks = tracks.filter(x => x.track && x.track.name).map(track => resolver.buildUnresolved(track.track)) ?? [];
                 this.cache.set(id, {
                     tracks: unresolvedPlaylistTracks,
                     name: metaData.name
                 })
                 return { tracks: unresolvedPlaylistTracks, name: metaData.name }
             } else {
-                const unresolvedPlaylistTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+                const unresolvedPlaylistTracks = tracks.filter(x => x && x.name).map(track => resolver.buildUnresolved(track)) ?? [];
                 this.cache.set(id, {
                     tracks: unresolvedPlaylistTracks,
                     name: metaData.name
@@ -55,12 +55,12 @@ export class PlaylistManager {
         }
         if (this.plugin.options?.strategy === "API") {
             const playlist = await this.plugin.resolver.makeRequest<Playlist>(`/playlists/${id}`);
-            const tracks = playlist.tracks.items.filter(x => x.track != null).map(item => resolver.buildUnresolved(item.track));
+            const tracks = playlist.tracks.items.filter(x => x.track != null && x.track.name).map(item => resolver.buildUnresolved(item.track));
             let next = playlist.tracks.next, page = 1;
 
             while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit!)) {
                 const nextPage = await this.plugin.resolver.makeRequest<PlaylistTracks>(next!.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x.track != null).map(item => resolver.buildUnresolved(item.track)));
+                tracks.push(...nextPage.items.filter(x => x.track != null && x.track.name).map(item => resolver.buildUnresolved(item.track)));
                 next = nextPage.next;
                 page++;
             }
@@ -76,10 +76,10 @@ export class PlaylistManager {
         //@ts-expect-error no typings
         if (typeof tracks[0].track === "object") {
             //@ts-expect-error no typings
-            const unresolvedPlaylistTracks = tracks.filter(x => x.track).map(track => resolver.buildUnresolved(track.track)) ?? [];
+            const unresolvedPlaylistTracks = tracks.filter(x => x.track && x.track.name).map(track => resolver.buildUnresolved(track.track)) ?? [];
             return { tracks: unresolvedPlaylistTracks, name: metaData.name }
         } else {
-            const unresolvedPlaylistTracks = tracks.map(track => resolver.buildUnresolved(track)) ?? [];
+            const unresolvedPlaylistTracks = tracks.filter(x => x && x.name).map(track => resolver.buildUnresolved(track)) ?? [];
             return { tracks: unresolvedPlaylistTracks, name: metaData.name }
         }
     }
