@@ -1,6 +1,6 @@
-import { UnresolvedTrack, LoadType, ModifyRequest, Track, LavalinkResult, TrackUtils } from "erela.js";
+import { UnresolvedTrack, LoadType, ModifyRequest, LavalinkResult, TrackUtils } from "erela.js";
 import { Tracks } from "spotify-url-info";
-import { SearchResult, SpotifyTrack, UnresolvedSpotifyTrack } from "./typings";
+import { SearchResult, SpotifyTrack } from "./typings";
 import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from './Manager';
 import Spotify from './index';
 import fetch from 'petitio';
@@ -17,20 +17,18 @@ export default class resolver {
     private nextRequest?: NodeJS.Timeout;
     public token!: string;
     public BASE_URL = "https://api.spotify.com/v1";
-
     public static buildUnresolved(track: Tracks | SpotifyTrack) {
         if (!track) throw new ReferenceError("The Spotify track object was not provided");
         if (!track.name) throw new ReferenceError("The track name was not provided");
         if (typeof track.name !== "string") throw new TypeError(`The track name must be a string, received type ${typeof track.name}`);
         return {
-            title: track.name,
+            title: track?.name,
             author: Array.isArray(track.artists) ? track.artists.map((x) => x.name).join(" ") : '',
             duration: track.duration_ms,
             uri: track.external_urls.spotify,
-            thumbnail: (track as SpotifyTrack)?.images ? (track as SpotifyTrack)?.images[0]?.url ?? null : (track as SpotifyTrack).album?.images[0].url ?? null
+            thumbnail: (track as SpotifyTrack)?.images ? (track as SpotifyTrack)?.images[0]?.url ?? null : (track as SpotifyTrack).album?.images[0]?.url ?? null
         }
     }
-
     public static buildSearch(loadType: LoadType, tracks: UnresolvedTrack[], error: string, name: string): SearchResult  {
         return {
             loadType: loadType,
@@ -53,44 +51,6 @@ export default class resolver {
 
         modify(req);
         return req.json();
-    }
-
-    private async retrieveTrack(unresolvedTrack: Partial<UnresolvedTrack>) {
-        const params = new URLSearchParams({
-            identifier: `ytsearch:${unresolvedTrack.author} - ${unresolvedTrack.title}`
-        });
-        const node = this.plugin.manager?.leastUsedNodes.first()!
-        const res = await node.makeRequest<LavalinkResult>(`/loadtracks?${params.toString()}`)
-        return res.tracks[0];
-    }
-
-    public buildUnresolved(track: UnresolvedSpotifyTrack, requester: unknown): UnresolvedTrack {
-        let unresolvedTrack = TrackUtils.buildUnresolved(track, requester);
-        if (this.plugin.options?.useSpotifyMetadata) {
-            Object.assign(unresolvedTrack, {
-                title: unresolvedTrack.title,
-                author: unresolvedTrack.author,
-                uri: unresolvedTrack.uri,
-                thumbnail: unresolvedTrack.thumbnail,
-            });
-        }
-        return unresolvedTrack as UnresolvedTrack;
-    }
-
-    public async resolve(unresolvedTrack: UnresolvedTrack, requester?: unknown) {
-        const lavaTrack = await this.retrieveTrack(unresolvedTrack);
-        const resolvedTrack = TrackUtils.build(lavaTrack, requester)
-        if (lavaTrack) {
-            if (this.plugin.options?.useSpotifyMetadata) {
-                Object.assign(resolvedTrack, {
-                    title: unresolvedTrack.title,
-                    author: unresolvedTrack.author,
-                    uri: unresolvedTrack.uri,
-                    thumbnail: unresolvedTrack.thumbnail,
-                });
-            }
-        }
-        return resolvedTrack;
     }
 
       public async renewToken(): Promise<number> {
