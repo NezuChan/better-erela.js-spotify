@@ -1,7 +1,12 @@
 
 # better-erela.js-spotify
  A erela.js spotify plugin, but more better.
-## Feature
+
+Being used in production by NezukoChan
+
+[![Kamado Community](https://discordapp.com/api/guilds/785715968608567297/embed.png?style=banner2)](https://discord.gg/b47d4AqxFR)
+
+## Features
  - Support both api and scrape strategy
  - Track caching
  - full coverage of spotify api, load track from show, episode, album, and artist
