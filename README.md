@@ -9,7 +9,8 @@
 ## Features
  - Support both api and scrape strategy
  - Track caching
- - full coverage of spotify api, load track from show, episode, album, and artist
+ - Full coverage of spotify api, load track from show, episode, album, and artist
+ - Lightweight
 ## Requirements
  - Node.JS 14.x
  - Erela.JS 2.3.3
