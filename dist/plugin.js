@@ -78,7 +78,7 @@ class Spotify extends erela_js_1.Plugin {
                 if (func) {
                     const data = await func.fetch(id);
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
-                    const name = ["playlist", "album", "artist", "episode", "show"].includes(type) ? data.name : null;
+                    const name = ["playlist", "album", "artist", "show"].includes(type) ? data.name : null;
                     // @ts-expect-error type mabok
                     if (!data.tracks.length)
                         return resolver_1.default.buildSearch("NO_MATCHES", [], null, null);
