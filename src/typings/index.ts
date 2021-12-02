@@ -1,19 +1,31 @@
 import {
     UnresolvedTrack,
-    UnresolvedQuery,
+    UnresolvedQuery
 } from "erela.js";
-import { ArtistsEntity } from "spotify-url-info";
+
+export interface ExternalUrls {
+    spotify: string;
+}
+
+export interface ArtistsEntity {
+    external_urls: ExternalUrls;
+    href: string;
+    id: string;
+    name: string;
+    type: string;
+    uri: string;
+}
 
 export interface SpotifyOptions {
-    convertUnresolved?: boolean,
-    strategy?: Strategy,
-    clientSecret?: string,
-    clientId?: string,
-    cacheTrack?: boolean,
-    showPageLimit?: number,
-    playlistPageLimit?: number,
-    albumPageLimit?: number,
-    maxCacheLifeTime?: number,
+    convertUnresolved?: boolean;
+    strategy?: Strategy;
+    clientSecret?: string;
+    clientId?: string;
+    cacheTrack?: boolean;
+    showPageLimit?: number;
+    playlistPageLimit?: number;
+    albumPageLimit?: number;
+    maxCacheLifeTime?: number;
 }
 
 export interface Playlist {
@@ -42,21 +54,21 @@ export interface PlaylistTracks {
 export interface SearchResult {
     exception?: {
         severity: string;
-        message: string
+        message: string;
     } | null;
     loadType: string;
     playlist?: {
         duration: number;
-        name: string
+        name: string;
     } | null;
-    tracks: UnresolvedTrack[]
+    tracks: UnresolvedTrack[];
 }
 export interface UnresolvedSpotifyTrack {
-    title: string,
-    author: string,
-    duration: number,
-    uri: string,
-    thumbnail: string | null
+    title: string;
+    author: string;
+    duration: number;
+    uri: string;
+    thumbnail: string | null;
 }
 export type Strategy = "SCRAPE" | "API";
 
@@ -67,16 +79,16 @@ export interface SpotifyTrack {
     external_urls: {
         spotify: string;
     };
-    images: spotifyThumbnail[]
+    images: spotifyThumbnail[];
     album: {
-        images: spotifyThumbnail[]
-    }
+        images: spotifyThumbnail[];
+    };
 }
 
 export interface spotifyThumbnail {
-    height: number,
-    url: string,
-    width: number
+    height: number;
+    url: string;
+    width: number;
 }
 export interface Album {
     name: string;
@@ -90,12 +102,12 @@ export interface AlbumTracks {
 
 export interface ShowTracks {
     next: string | null;
-    items: SpotifyTrack[]
-};
+    items: SpotifyTrack[];
+}
 
 export interface Show {
-    name: string,
-    episodes: ShowTracks
+    name: string;
+    episodes: ShowTracks;
 }
 
 export interface Result {

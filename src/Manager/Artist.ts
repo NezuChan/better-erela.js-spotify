@@ -1,53 +1,37 @@
-import Collection from "@discordjs/collection";
-import { getData, getTracks } from "spotify-url-info";
-import Spotify from '../index';
+import Spotify from "../index";
 import resolver from "../resolver";
 import { Artist, ArtistTrack, UnresolvedSpotifyTrack } from "../typings";
 export class ArtistManager {
-    public cache: Collection<string, ShowCache> = new Collection();
+    public cache: Map<string, ShowCache> = new Map();
     public constructor(public plugin: Spotify) {
         if (plugin.options?.maxCacheLifeTime) {
             setInterval(() => {
-                this.cache.clear()
-            }, plugin.options?.maxCacheLifeTime)
+                this.cache.clear();
+            }, plugin.options.maxCacheLifeTime);
         }
     }
-    public async fetch(url: string, id: string) {
+
+    public async fetch(id: string): Promise<ShowCache> {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id)) return this.cache.get(id)!;
-            if (this.plugin.options.strategy === "API") {
-                const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
-                const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
-                const tracks = playlist.tracks.filter(x => x != null).map(item => resolver.buildUnresolved(item));
-                this.cache.set(id, {
-                    tracks,
-                    name: metaData.name
-                })
-                return { tracks, name: metaData.name };
-            }
-            const tracks = await getTracks(url);
-            const metaData = await getData(url)
-            const unresolvedAlbumTracks: UnresolvedSpotifyTrack[] = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-            this.cache.set(id, {
-                tracks: unresolvedAlbumTracks,
-                name: metaData.name
-            })
-            return { tracks: unresolvedAlbumTracks, name: metaData.name }
-        }
-        if (this.plugin.options?.strategy === "API") {
             const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
             const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
-            const tracks = playlist.tracks.filter(x => x != null).map(item => resolver.buildUnresolved(item));
-            return { tracks, name: metaData.name };
+            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
+            if (!playlist.tracks) return { tracks: [], name: undefined! };
+            const tracks = playlist.tracks.map(item => resolver.buildUnresolved(item));
+            this.cache.set(id, { tracks, name: `${metaData.name} Top Tracks` });
+            return { tracks, name: `${metaData.name} Top Tracks` };
         }
-        const tracks = await getTracks(url);
-        const metaData = await getData(url)
-        const unresolvedAlbumTracks = tracks.map(track => track && resolver.buildUnresolved(track)) ?? [];
-        return { tracks: unresolvedAlbumTracks, name: metaData.name }
+        const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
+        const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
+        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
+        if (!playlist.tracks) return { tracks: [], name: undefined! };
+        const tracks = playlist.tracks.map(item => resolver.buildUnresolved(item));
+        return { tracks, name: `${metaData.name} Top Tracks` };
     }
 }
 
 interface ShowCache {
-    tracks: UnresolvedSpotifyTrack[],
-    name: string
+    tracks: UnresolvedSpotifyTrack[];
+    name: string;
 }
