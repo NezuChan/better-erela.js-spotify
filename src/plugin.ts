@@ -123,7 +123,7 @@ export class Spotify extends Plugin {
                 if (func) {
                     const data: Result = await func.fetch(id);
                     const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
-                    const name = ["playlist", "album", "artist", "episode", "show"].includes(type) ? data.name : null;
+                    const name = ["playlist", "album", "artist", "show"].includes(type) ? data.name : null;
                     // @ts-expect-error type mabok
                     if (!data.tracks.length) return resolver.buildSearch("NO_MATCHES", [], null, null);
                     const tracks = await Promise.all(data.tracks.map(async query => {
