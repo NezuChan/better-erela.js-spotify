@@ -5,3 +5,6 @@ package-lock.json
 .gitignore
 .gitattributes
 docs
+.github
+typedoc.json
+test.js
