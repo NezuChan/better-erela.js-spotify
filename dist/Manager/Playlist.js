@@ -4,88 +4,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlaylistManager = void 0;
-const collection_1 = __importDefault(require("@discordjs/collection"));
-const spotify_url_info_1 = require("spotify-url-info");
 const resolver_1 = __importDefault(require("../resolver"));
 class PlaylistManager {
     constructor(plugin) {
         this.plugin = plugin;
-        this.cache = new collection_1.default();
+        this.cache = new Map();
         if (plugin.options?.maxCacheLifeTime) {
             setInterval(() => {
                 this.cache.clear();
-            }, plugin.options?.maxCacheLifeTime);
+            }, plugin.options.maxCacheLifeTime);
         }
     }
-    async fetch(url, id) {
+    async fetch(id) {
         if (this.plugin.options?.cacheTrack) {
             if (this.cache.has(id))
                 return this.cache.get(id);
-            if (this.plugin.options.strategy === "API") {
-                const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
-                const tracks = playlist.tracks.items.filter(x => x.track != null && x.track.name).map(item => resolver_1.default.buildUnresolved(item.track));
-                let next = playlist.tracks.next, page = 1;
-                while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
-                    const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                    tracks.push(...nextPage.items.filter(x => x.track != null && x.track.name).map(item => resolver_1.default.buildUnresolved(item.track)));
-                    next = nextPage.next;
-                    page++;
-                }
-                this.cache.set(id, {
-                    tracks,
-                    name: playlist.name
-                });
-                return { tracks, name: playlist.name };
-            }
-            const tracks = await (0, spotify_url_info_1.getTracks)(url);
-            const metaData = await (0, spotify_url_info_1.getData)(url);
-            //@ts-expect-error no typings
-            if (typeof tracks[0].track === "object") {
-                //@ts-expect-error no typings
-                const unresolvedPlaylistTracks = tracks.filter(x => x.track && x.track.name).map(track => resolver_1.default.buildUnresolved(track.track)) ?? [];
-                this.cache.set(id, {
-                    tracks: unresolvedPlaylistTracks,
-                    name: metaData.name
-                });
-                return { tracks: unresolvedPlaylistTracks, name: metaData.name };
-            }
-            else {
-                const unresolvedPlaylistTracks = tracks.filter(x => x && x.name).map(track => resolver_1.default.buildUnresolved(track)) ?? [];
-                this.cache.set(id, {
-                    tracks: unresolvedPlaylistTracks,
-                    name: metaData.name
-                });
-                return { tracks: unresolvedPlaylistTracks, name: metaData.name };
-            }
-        }
-        if (this.plugin.options?.strategy === "API") {
             const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
-            const tracks = playlist.tracks.items.filter(x => x.track != null && x.track.name).map(item => resolver_1.default.buildUnresolved(item.track));
-            let next = playlist.tracks.next, page = 1;
+            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
+            if (!playlist.tracks)
+                return { tracks: [], name: undefined };
+            const tracks = playlist.tracks.items.filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track));
+            let next = playlist.tracks.next;
+            let page = 1;
+            /* eslint no-negated-condition: "off" */
             while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
                 const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x.track != null && x.track.name).map(item => resolver_1.default.buildUnresolved(item.track)));
+                tracks.push(...nextPage.items.filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track)));
                 next = nextPage.next;
                 page++;
             }
-            this.cache.set(id, {
-                tracks,
-                name: playlist.name
-            });
+            this.cache.set(id, { tracks, name: playlist.name });
             return { tracks, name: playlist.name };
         }
-        const tracks = await (0, spotify_url_info_1.getTracks)(url);
-        const metaData = await (0, spotify_url_info_1.getData)(url);
-        //@ts-expect-error no typings
-        if (typeof tracks[0].track === "object") {
-            //@ts-expect-error no typings
-            const unresolvedPlaylistTracks = tracks.filter(x => x.track && x.track.name).map(track => resolver_1.default.buildUnresolved(track.track)) ?? [];
-            return { tracks: unresolvedPlaylistTracks, name: metaData.name };
+        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
+        const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
+        if (!playlist.tracks)
+            return { tracks: [], name: undefined };
+        const tracks = playlist.tracks.items.filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track));
+        let next = playlist.tracks.next;
+        let page = 1;
+        /* eslint no-negated-condition: "off" */
+        while (next && (!this.plugin.options?.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
+            const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
+            tracks.push(...nextPage.items.filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track)));
+            next = nextPage.next;
+            page++;
         }
-        else {
-            const unresolvedPlaylistTracks = tracks.filter(x => x && x.name).map(track => resolver_1.default.buildUnresolved(track)) ?? [];
-            return { tracks: unresolvedPlaylistTracks, name: metaData.name };
-        }
+        return { tracks, name: playlist.name };
     }
 }
 exports.PlaylistManager = PlaylistManager;

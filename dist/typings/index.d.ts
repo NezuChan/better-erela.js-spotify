@@ -1,5 +1,15 @@
 import { UnresolvedTrack, UnresolvedQuery } from "erela.js";
-import { ArtistsEntity } from "spotify-url-info";
+export interface ExternalUrls {
+    spotify: string;
+}
+export interface ArtistsEntity {
+    external_urls: ExternalUrls;
+    href: string;
+    id: string;
+    name: string;
+    type: string;
+    uri: string;
+}
 export interface SpotifyOptions {
     convertUnresolved?: boolean;
     strategy?: Strategy;

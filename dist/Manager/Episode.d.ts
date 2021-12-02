@@ -1,11 +1,10 @@
-import Collection from "@discordjs/collection";
-import Spotify from '../index';
+import Spotify from "../index";
 import { UnresolvedSpotifyTrack } from "../typings";
 export declare class EpisodeManager {
     plugin: Spotify;
+    cache: Map<string, UnresolvedSpotifyTrack[]>;
     constructor(plugin: Spotify);
-    cache: Collection<string, UnresolvedSpotifyTrack[]>;
-    fetch(url: string, id: string): Promise<{
+    fetch(id: string): Promise<{
         tracks: UnresolvedSpotifyTrack[];
     }>;
 }
