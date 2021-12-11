@@ -1,12 +1,8 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const Manager_1 = require("./Manager");
-const petitio_1 = __importDefault(require("petitio"));
+const undici_1 = require("undici");
 class resolver {
-    /* eslint @typescript-eslint/explicit-member-accessibility: "off" */
     constructor(plugin) {
         this.plugin = plugin;
         this.getTrack = new Manager_1.TrackManager(this.plugin);
@@ -42,20 +38,21 @@ class resolver {
             exception: error ? { message: error, severity: "COMMON" } : null
         };
     }
-    async makeRequest(endpoint, modify = () => void 0) {
+    async makeRequest(endpoint) {
         if (!this.token)
             await this.renew();
-        const req = (0, petitio_1.default)(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`).header("Authorization", this.token);
-        modify(req);
+        const req = await (0, undici_1.fetch)(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`, { headers: { Authorization: this.token } });
         return req.json();
     }
     async renewToken() {
-        const { access_token, expires_in } = await (0, petitio_1.default)("https://accounts.spotify.com/api/token", "POST")
-            .query("grant_type", "client_credentials")
-            /* eslint @typescript-eslint/restrict-template-expressions: "off" */
-            .header("Authorization", `Basic ${Buffer.from(`${this.plugin.options?.clientId}:${this.plugin.options?.clientSecret}`).toString("base64")}`)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .json();
+        const response = await (0, undici_1.fetch)("https://accounts.spotify.com/api/token?grant_type=client_credentials", {
+            method: "POST", headers: {
+                /* eslint @typescript-eslint/restrict-template-expressions: "off" */
+                Authorization: `Basic ${Buffer.from(`${this.plugin.options?.clientId}:${this.plugin.options?.clientSecret}`).toString("base64")}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+        const { access_token, expires_in } = await response.json();
         if (!access_token) {
             throw new Error("Invalid Spotify client.");
         }
@@ -63,7 +60,8 @@ class resolver {
         return expires_in * 1000;
     }
     async getSelfToken() {
-        const { accessToken, accessTokenExpirationTimestampMs } = await (0, petitio_1.default)("https://open.spotify.com/get_access_token?reason=transport&productType=embed").header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59").json();
+        const response = await (0, undici_1.fetch)("https://open.spotify.com/get_access_token?reason=transport&productType=embed", { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59" } });
+        const { accessToken, accessTokenExpirationTimestampMs } = await response.json();
         if (!accessToken)
             throw new Error("Could not fetch self spotify token.");
         this.token = `Bearer ${accessToken}`;
