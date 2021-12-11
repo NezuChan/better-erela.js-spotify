@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "erela.js": "^2.3.3",
-    "petitio": "^1.4.0"
+    "undici": "^4.11.3"
   },
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",

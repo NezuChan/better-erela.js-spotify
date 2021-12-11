@@ -1,12 +1,11 @@
-import { UnresolvedTrack, LoadType, ModifyRequest } from "erela.js";
-import { SearchResult, SpotifyTrack } from "./typings";
+import { UnresolvedTrack, LoadType } from "erela.js";
+import { ISpotifyAccessTokenAPIResult, ISpotifyAccessTokenAPIScrapeResult, SearchResult, SpotifyTrack } from "./typings";
 import { EpisodeManager, PlaylistManager, ShowManager, TrackManager, AlbumManager, ArtistManager } from "./Manager";
 import Spotify from "./index";
-import fetch from "petitio";
+import { fetch } from "undici";
 
 export default class resolver {
-    /* eslint @typescript-eslint/explicit-member-accessibility: "off" */
-    constructor(public plugin: Spotify) { }
+    public constructor(public plugin: Spotify) { }
 
     public getTrack = new TrackManager(this.plugin);
     public getPlaylist = new PlaylistManager(this.plugin);
@@ -40,21 +39,21 @@ export default class resolver {
         };
     }
 
-    public async makeRequest<T>(endpoint: string, modify: ModifyRequest = () => void 0): Promise<T> {
+    public async makeRequest<T>(endpoint: string): Promise<T> {
         if (!this.token) await this.renew();
-        const req = fetch(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`).header("Authorization", this.token);
-        modify(req);
-        return req.json();
+        const req = await fetch(`${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`, { headers: { Authorization: this.token } });
+        return req.json() as Promise<T>;
     }
 
     public async renewToken(): Promise<number> {
-        const { access_token, expires_in } = await fetch("https://accounts.spotify.com/api/token", "POST")
-            .query("grant_type", "client_credentials")
-            /* eslint @typescript-eslint/restrict-template-expressions: "off" */
-            .header("Authorization", `Basic ${Buffer.from(`${this.plugin.options?.clientId}:${this.plugin.options?.clientSecret}`).toString("base64")}`)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .json();
-
+        const response = await fetch("https://accounts.spotify.com/api/token?grant_type=client_credentials", {
+            method: "POST", headers: {
+                /* eslint @typescript-eslint/restrict-template-expressions: "off" */
+                Authorization: `Basic ${Buffer.from(`${this.plugin.options?.clientId}:${this.plugin.options?.clientSecret}`).toString("base64")}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+        const { access_token, expires_in } = await response.json() as ISpotifyAccessTokenAPIResult;
         if (!access_token) {
             throw new Error("Invalid Spotify client.");
         }
@@ -64,10 +63,11 @@ export default class resolver {
     }
 
     public async getSelfToken(): Promise<number> {
-        const { accessToken, accessTokenExpirationTimestampMs } = await fetch("https://open.spotify.com/get_access_token?reason=transport&productType=embed").header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59").json();
+        const response = await fetch("https://open.spotify.com/get_access_token?reason=transport&productType=embed", { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59" } });
+        const { accessToken, accessTokenExpirationTimestampMs } = await response.json() as ISpotifyAccessTokenAPIScrapeResult;
         if (!accessToken) throw new Error("Could not fetch self spotify token.");
         this.token = `Bearer ${accessToken}`;
-        return new Date(accessTokenExpirationTimestampMs as number).getMilliseconds() * 1000;
+        return new Date(accessTokenExpirationTimestampMs).getMilliseconds() * 1000;
     }
 
     public async renew(): Promise<void> {

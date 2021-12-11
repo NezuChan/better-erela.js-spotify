@@ -7,6 +7,18 @@ export interface ExternalUrls {
     spotify: string;
 }
 
+export interface ISpotifyAccessTokenAPIScrapeResult {
+    clientId: string;
+    accessToken?: string;
+    accessTokenExpirationTimestampMs: number;
+    isAnonymous: boolean;
+}
+
+export interface ISpotifyAccessTokenAPIResult {
+    access_token?: string;
+    expires_in: number;
+}
+
 export interface ArtistsEntity {
     external_urls: ExternalUrls;
     href: string;
