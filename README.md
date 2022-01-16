@@ -4,7 +4,7 @@
 
 *Being used in production by NezukoChan (Different library but still same usage)
 
-[![Kamado Community](https://discordapp.com/api/guilds/785715968608567297/embed.png?style=banner2)](https://discord.gg/b47d4AqxFR)
+[![Kamado Community](https://discordapp.com/api/guilds/785715968608567297/embed.png?style=banner2)](https://discord.gg/8hmbMUCVMD)
 
 ## Features
  - Support both api and scrape strategy
