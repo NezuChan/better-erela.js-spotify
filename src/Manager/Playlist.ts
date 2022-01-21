@@ -17,13 +17,13 @@ export class PlaylistManager {
             const playlist = await this.plugin.resolver.makeRequest<Playlist>(`/playlists/${id}`);
             /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
             if (!playlist.tracks) return { tracks: [], name: undefined! };
-            const tracks = playlist.tracks.items.filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track));
+            const tracks = playlist.tracks.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track));
             let next = playlist.tracks.next; let page = 1;
 
             /* eslint no-negated-condition: "off" */
             while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
                 const nextPage = await this.plugin.resolver.makeRequest<PlaylistTracks>(next.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track)));
+                tracks.push(...nextPage.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track)));
                 next = nextPage.next;
                 page++;
             }
@@ -33,13 +33,13 @@ export class PlaylistManager {
         /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
         const playlist = await this.plugin.resolver.makeRequest<Playlist>(`/playlists/${id}`);
         if (!playlist.tracks) return { tracks: [], name: undefined! };
-        const tracks = playlist.tracks.items.filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track));
+        const tracks = playlist.tracks.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track));
         let next = playlist.tracks.next; let page = 1;
 
         /* eslint no-negated-condition: "off" */
         while (next && (!this.plugin.options?.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
             const nextPage = await this.plugin.resolver.makeRequest<PlaylistTracks>(next.split("v1")[1]);
-            tracks.push(...nextPage.items.filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track)));
+            tracks.push(...nextPage.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track)));
             next = nextPage.next;
             page++;
         }
