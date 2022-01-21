@@ -2,7 +2,7 @@
   "name": "better-erela.js-spotify",
   "main": "dist",
   "description": "A better version of erela.js-spotify plugin",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "devDependencies": {
     "@hazmi35/eslint-config": "^8.0.0",
     "@types/node": "^17.0.0",
