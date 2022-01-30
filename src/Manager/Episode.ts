@@ -4,7 +4,7 @@ import { BaseManager } from "./BaseManager";
 export class EpisodeManager extends BaseManager {
     public async fetch(id: string, requester: unknown): Promise<SearchResult> {
         await this.checkFromCache(id, requester)!;
-        const episode = await this.resolver.makeRequest<SpotifyEpisode>(`/episode/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        const episode = await this.resolver.makeRequest<SpotifyEpisode>(`/episodes/${id}?market=${this.resolver.plugin.options.countryMarket}`);
         if (episode) {
             this.cache.set(id, { tracks: [episode] });
             return this.buildSearch("TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack([TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)]) : [TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)], undefined, episode.name);

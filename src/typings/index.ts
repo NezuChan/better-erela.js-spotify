@@ -30,7 +30,7 @@ export interface ArtistsEntity {
 
 export interface SpotifyOptions {
     /** @deprecated Please use `clientId` instead, **this is backward compability for erela.js-spotify user.** */
-    clientID: string;
+    clientID?: string;
     /** @default false */
     convertUnresolved?: boolean;
     /** @default SCRAPE */
@@ -103,7 +103,7 @@ export interface SpotifyTrack {
         spotify: string;
     };
     images?: spotifyThumbnail[];
-    album: {
+    album?: {
         images: spotifyThumbnail[];
     };
     type: "track";

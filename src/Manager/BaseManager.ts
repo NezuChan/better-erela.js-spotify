@@ -49,7 +49,7 @@ export abstract class BaseManager {
         } return {
             title: track.name,
             duration: track.duration_ms,
-            thumbnail: (track as SpotifyTrack).album.images[0].url ?? null,
+            thumbnail: (track as SpotifyTrack).album?.images[0].url ?? null,
             uri: track.external_urls.spotify
         };
     }

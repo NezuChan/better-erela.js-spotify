@@ -1,0 +1,23 @@
+name: Test code
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Installing Node.js v14
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - run: |
+          git fetch origin ${{ github.ref }}
+          git pull origin ${{ github.ref }}
+      - name: Installing dependencies
+        run: yarn install --frozen-lockfile
+      - name: Run test
+        run: yarn test
