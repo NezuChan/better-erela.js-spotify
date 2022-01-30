@@ -11,8 +11,7 @@ class EpisodeManager extends BaseManager_1.BaseManager {
             this.cache.set(id, { tracks: [episode] });
             return this.buildSearch("TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack([erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)]) : [erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)], undefined, episode.name);
         }
-        else
-            return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 exports.EpisodeManager = EpisodeManager;

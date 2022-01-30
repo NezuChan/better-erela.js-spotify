@@ -26,7 +26,7 @@ class BaseManager {
             try {
                 await track.resolve();
             }
-            catch (e) {
+            catch (_e) {
                 return null;
             }
             return track;
@@ -39,16 +39,15 @@ class BaseManager {
                 title: track.name,
                 duration: track.duration_ms,
                 thumbnail: track.images[0].url,
-                uri: track.external_urls.spotify,
+                uri: track.external_urls.spotify
             };
         }
-        else
-            return {
-                title: track.name,
-                duration: track.duration_ms,
-                thumbnail: track.album?.images[0].url ?? null,
-                uri: track.external_urls.spotify,
-            };
+        return {
+            title: track.name,
+            duration: track.duration_ms,
+            thumbnail: track.album.images[0].url ?? null,
+            uri: track.external_urls.spotify
+        };
     }
 }
 exports.BaseManager = BaseManager;

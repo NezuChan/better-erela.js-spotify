@@ -1,7 +1,7 @@
-/// <reference types="erela.js" />
+import { SearchResult } from "erela.js";
 import { BaseManager } from "./BaseManager";
 export declare class EpisodeManager extends BaseManager {
-    fetch(id: string, requester: unknown): Promise<import("erela.js").SearchResult>;
+    fetch(id: string, requester: unknown): Promise<SearchResult>;
 }
 export interface SpotifyEpisode {
     id: string;

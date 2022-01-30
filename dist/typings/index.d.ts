@@ -79,7 +79,7 @@ export interface UnresolvedSpotifyTrack {
     uri: string;
     thumbnail: string | null;
 }
-export declare type Strategy = "SCRAPE" | "API";
+export declare type Strategy = "API" | "SCRAPE";
 export interface SpotifyTrack {
     artists: ArtistsEntity[];
     name: string;

@@ -12,8 +12,7 @@ class ArtistManager extends BaseManager_1.BaseManager {
             this.cache.set(id, { tracks: artistTracks.tracks, name: artistInfo.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(artistTracks.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : artistTracks.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, artistInfo.name);
         }
-        else
-            return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 exports.ArtistManager = ArtistManager;

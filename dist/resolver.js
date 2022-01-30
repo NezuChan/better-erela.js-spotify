@@ -19,16 +19,17 @@ class resolver {
         try {
             if (!this.token)
                 await this.renew();
-            const req = await (0, undici_1.fetch)(endpoint.startsWith("http") ? endpoint : `${this.BASE_URL}${/^\//.test(endpoint) ? endpoint : `/${endpoint}`}`, { headers: { Authorization: this.token } });
-            return req.json();
+            const req = await (0, undici_1.fetch)(endpoint.startsWith("http") ? endpoint : `${this.BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, { headers: { Authorization: this.token } });
+            return await req.json();
         }
-        catch (e) {
+        catch (_e) {
             return null;
         }
     }
     async renewToken() {
         const response = await (0, undici_1.fetch)("https://accounts.spotify.com/api/token?grant_type=client_credentials", {
-            method: "POST", headers: {
+            method: "POST",
+            headers: {
                 Authorization: `Basic ${Buffer.from(`${this.plugin.options.clientID ?? this.plugin.options.clientId}:${this.plugin.options.clientSecret}`).toString("base64")}`,
                 "Content-Type": "application/x-www-form-urlencoded"
             }
@@ -46,7 +47,7 @@ class resolver {
         if (!accessToken)
             throw new Error("Could not fetch self spotify token.");
         this.token = `Bearer ${accessToken}`;
-        return new Date(accessTokenExpirationTimestampMs).getMilliseconds() * 1000;
+        return (new Date(accessTokenExpirationTimestampMs).getMilliseconds() - 10) * 1000;
     }
     async renew() {
         if (this.plugin.options.strategy === "API") {

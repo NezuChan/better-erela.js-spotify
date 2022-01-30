@@ -64,6 +64,11 @@ class Spotify extends erela_js_1.Plugin {
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
+        if (typeof this.options.maxCacheLifeTime === "number") {
+            for (const resolverManager of Object.values(this.resolver.resolveManager)) {
+                setInterval(() => resolverManager.cache.clear(), this.options.maxCacheLifeTime);
+            }
+        }
         try {
             await this.resolver.renew();
         }
@@ -73,7 +78,7 @@ class Spotify extends erela_js_1.Plugin {
     }
     async search(query, requester) {
         const finalQuery = query.query || query;
-        const [, type, id] = finalQuery.match(this.spotifyMatch) ?? [];
+        const [, type, id] = this.spotifyMatch.exec(finalQuery) ?? [];
         if (type in this.resolver.resolveManager) {
             return this.resolver.resolveManager[type].fetch(id, requester);
         }

@@ -11,8 +11,7 @@ class TrackManager extends BaseManager_1.BaseManager {
             this.cache.set(id, { tracks: [track] });
             return this.buildSearch("TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack([erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(track), requester)]) : [erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(track), requester)], undefined, track.name);
         }
-        else
-            return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 exports.TrackManager = TrackManager;

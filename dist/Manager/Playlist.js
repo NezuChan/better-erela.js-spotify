@@ -9,21 +9,21 @@ class PlaylistManager extends BaseManager_1.BaseManager {
         const playlist = await this.resolver.makeRequest(`/playlists/${id}?market=${this.resolver.plugin.options.countryMarket}`);
         if (playlist && playlist.tracks.items.filter(x => x.track !== null).length) {
             let page = 1;
-            while (playlist.tracks.next && (!this.resolver.plugin.options?.playlistPageLimit ? true : page < this.resolver.plugin.options.playlistPageLimit)) {
+            while (playlist.tracks.next && (!this.resolver.plugin.options.playlistPageLimit ? true : page < this.resolver.plugin.options.playlistPageLimit)) {
                 const tracks = await this.resolver.makeRequest(playlist.tracks.next);
                 page++;
                 if (tracks && tracks.items) {
                     playlist.tracks.next = tracks.next;
                     playlist.tracks.items.push(...tracks.items);
                 }
-                else
+                else {
                     playlist.tracks.next = null;
+                }
             }
             this.cache.set(id, { tracks: playlist.tracks.items.filter(x => x.track).map(x => x.track), name: playlist.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(playlist.tracks.items.filter(x => x.track !== null).map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item.track), requester))) : playlist.tracks.items.filter(x => x.track !== null).map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item.track), requester)), undefined, playlist.name);
         }
-        else
-            return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 exports.PlaylistManager = PlaylistManager;
