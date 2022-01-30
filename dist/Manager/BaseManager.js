@@ -45,7 +45,7 @@ class BaseManager {
         return {
             title: track.name,
             duration: track.duration_ms,
-            thumbnail: track.album.images[0].url ?? null,
+            thumbnail: track.album?.images[0].url ?? null,
             uri: track.external_urls.spotify
         };
     }

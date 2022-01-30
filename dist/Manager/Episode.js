@@ -6,7 +6,7 @@ const BaseManager_1 = require("./BaseManager");
 class EpisodeManager extends BaseManager_1.BaseManager {
     async fetch(id, requester) {
         await this.checkFromCache(id, requester);
-        const episode = await this.resolver.makeRequest(`/episode/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        const episode = await this.resolver.makeRequest(`/episodes/${id}?market=${this.resolver.plugin.options.countryMarket}`);
         if (episode) {
             this.cache.set(id, { tracks: [episode] });
             return this.buildSearch("TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack([erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)]) : [erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)], undefined, episode.name);
