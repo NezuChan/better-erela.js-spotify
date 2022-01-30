@@ -1,37 +1,23 @@
-import Spotify from "../index";
-import resolver from "../resolver";
-import { Artist, ArtistTrack, UnresolvedSpotifyTrack } from "../typings";
-export class ArtistManager {
-    public cache: Map<string, ShowCache> = new Map();
-    public constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
+import { SearchResult, TrackUtils } from "erela.js";
+import { SpotifyTrack } from "../typings";
+import { BaseManager } from "./BaseManager";
 
-    public async fetch(id: string): Promise<ShowCache> {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id)) return this.cache.get(id)!;
-            const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
-            const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!playlist.tracks) return { tracks: [], name: undefined! };
-            const tracks = playlist.tracks.map(item => resolver.buildUnresolved(item));
-            this.cache.set(id, { tracks, name: `${metaData.name} Top Tracks` });
-            return { tracks, name: `${metaData.name} Top Tracks` };
-        }
-        const metaData = await this.plugin.resolver.makeRequest<Artist>(`/artists/${id}?market=US`);
-        const playlist = await this.plugin.resolver.makeRequest<ArtistTrack>(`/artists/${id}/top-tracks?country=US`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!playlist.tracks) return { tracks: [], name: undefined! };
-        const tracks = playlist.tracks.map(item => resolver.buildUnresolved(item));
-        return { tracks, name: `${metaData.name} Top Tracks` };
+export class ArtistManager extends BaseManager {
+    public async fetch(id: string, requester: unknown): Promise<SearchResult> {
+        this.checkFromCache(id, requester);
+        const artistTracks = await this.resolver.makeRequest<SpotifyArtistTracks>(`/artists/${id}/top-tracks?market=${this.resolver.plugin.options.countryMarket}`);
+        const artistInfo = await this.resolver.makeRequest<SpotifyArtist>(`/artists/${id}`);
+        if (artistInfo && artistTracks) {
+            this.cache.set(id, { tracks: artistTracks.tracks, name: artistInfo.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(artistTracks.tracks.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : artistTracks.tracks.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, artistInfo.name);
+        } return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
+export interface SpotifyArtistTracks {
+    tracks: SpotifyTrack[];
+}
 
-interface ShowCache {
-    tracks: UnresolvedSpotifyTrack[];
+export interface SpotifyArtist {
+    id: string;
     name: string;
 }

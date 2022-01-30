@@ -1,56 +1,29 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlaylistManager = void 0;
-const resolver_1 = __importDefault(require("../resolver"));
-class PlaylistManager {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.cache = new Map();
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
-    async fetch(id) {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id))
-                return this.cache.get(id);
-            const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!playlist.tracks)
-                return { tracks: [], name: undefined };
-            const tracks = playlist.tracks.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track));
-            let next = playlist.tracks.next;
+const erela_js_1 = require("erela.js");
+const BaseManager_1 = require("./BaseManager");
+class PlaylistManager extends BaseManager_1.BaseManager {
+    async fetch(id, requester) {
+        this.checkFromCache(id, requester);
+        const playlist = await this.resolver.makeRequest(`/playlists/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        if (playlist && playlist.tracks.items.filter(x => x.track !== null).length) {
             let page = 1;
-            /* eslint no-negated-condition: "off" */
-            while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
-                const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track)));
-                next = nextPage.next;
+            while (playlist.tracks.next && (!this.resolver.plugin.options?.playlistPageLimit ? true : page < this.resolver.plugin.options.playlistPageLimit)) {
+                const tracks = await this.resolver.makeRequest(playlist.tracks.next);
                 page++;
+                if (tracks && tracks.items) {
+                    playlist.tracks.next = tracks.next;
+                    playlist.tracks.items.push(...tracks.items);
+                }
+                else
+                    playlist.tracks.next = null;
             }
-            this.cache.set(id, { tracks, name: playlist.name });
-            return { tracks, name: playlist.name };
+            this.cache.set(id, { tracks: playlist.tracks.items.filter(x => x.track).map(x => x.track), name: playlist.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(playlist.tracks.items.filter(x => x.track !== null).map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item.track), requester))) : playlist.tracks.items.filter(x => x.track !== null).map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item.track), requester)), undefined, playlist.name);
         }
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        const playlist = await this.plugin.resolver.makeRequest(`/playlists/${id}`);
-        if (!playlist.tracks)
-            return { tracks: [], name: undefined };
-        const tracks = playlist.tracks.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track));
-        let next = playlist.tracks.next;
-        let page = 1;
-        /* eslint no-negated-condition: "off" */
-        while (next && (!this.plugin.options?.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
-            const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-            tracks.push(...nextPage.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver_1.default.buildUnresolved(item.track)));
-            next = nextPage.next;
-            page++;
-        }
-        return { tracks, name: playlist.name };
+        else
+            return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 exports.PlaylistManager = PlaylistManager;

@@ -45,66 +45,37 @@ const check = (options) => {
 class Spotify extends erela_js_1.Plugin {
     constructor(options) {
         super();
-        this.options = options;
         this.resolver = new resolver_1.default(this);
         this.spotifyMatch = /(?:https:\/\/open\.spotify\.com\/|spotify:)(?:.+)?(track|playlist|artist|episode|show|album)[\/:]([A-Za-z0-9]+)/;
-        this.functions = {
-            track: this.resolver.getTrack,
-            album: this.resolver.getAlbum,
-            playlist: this.resolver.getPlaylist,
-            artist: this.resolver.getArtist,
-            show: this.resolver.getShow,
-            episode: this.resolver.getEpisode
-        };
         check(options);
         this.options = {
+            strategy: "SCRAPE",
+            cacheTrack: true,
+            countryMarket: "US",
+            albumPageLimit: 10,
+            showPageLimit: 10,
+            playlistPageLimit: 10,
+            maxCacheLifeTime: 360000,
+            convertUnresolved: false,
             ...options
         };
-        void this.resolver.renew();
     }
     async load(manager) {
         this.manager = manager;
         this._search = manager.search.bind(manager);
         manager.search = this.search.bind(this);
+        try {
+            await this.resolver.renew();
+        }
+        catch (e) {
+            console.error("Failed to renew Spotify token:", e);
+        }
     }
     async search(query, requester) {
         const finalQuery = query.query || query;
         const [, type, id] = finalQuery.match(this.spotifyMatch) ?? [];
-        if (type in this.functions) {
-            try {
-                /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-                const func = this.functions[type] || undefined;
-                /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-                if (func) {
-                    const data = await func.fetch(id);
-                    const loadType = type === "track" || type === "episode" ? "TRACK_LOADED" : "PLAYLIST_LOADED";
-                    const name = ["playlist", "album", "artist", "show"].includes(type) ? data.name : null;
-                    // @ts-expect-error type mabok
-                    if (!data.tracks.length)
-                        return resolver_1.default.buildSearch("NO_MATCHES", [], null, null);
-                    const tracks = await Promise.all(data.tracks.map(async (query) => {
-                        const track = erela_js_1.TrackUtils.buildUnresolved(query, requester);
-                        if (this.options?.convertUnresolved) {
-                            try {
-                                await track.resolve();
-                            }
-                            catch {
-                                return null;
-                            }
-                        }
-                        return track;
-                    }).filter(track => Boolean(track)));
-                    // @ts-expect-error type mabok
-                    return resolver_1.default.buildSearch(loadType, tracks, null, name);
-                }
-                const msg = "Incorrect type for Spotify URL, must be one of \"track\", \"album\", \"artist\", \"show\", \"episode\" or \"playlist\".";
-                // @ts-expect-error type mabok
-                return resolver_1.default.buildSearch("LOAD_FAILED", [], msg, null);
-            }
-            catch (e) {
-                // @ts-expect-error type mabok
-                return resolver_1.default.buildSearch("LOAD_FAILED", [], (String(e.message) || undefined) ?? null, null);
-            }
+        if (type in this.resolver.resolveManager) {
+            return this.resolver.resolveManager[type].fetch(id, requester);
         }
         return this._search(query, requester);
     }

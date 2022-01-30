@@ -1,13 +1,14 @@
-import Spotify from "../index";
-import { UnresolvedSpotifyTrack } from "../typings";
-export declare class ShowManager {
-    plugin: Spotify;
-    cache: Map<string, ShowCache>;
-    constructor(plugin: Spotify);
-    fetch(id: string): Promise<ShowCache>;
+/// <reference types="erela.js" />
+import { BaseManager } from "./BaseManager";
+import { SpotifyEpisode } from "./Episode";
+export declare class ShowManager extends BaseManager {
+    fetch(id: string, requester: unknown): Promise<import("erela.js").SearchResult>;
 }
-interface ShowCache {
-    tracks: UnresolvedSpotifyTrack[];
+export interface spotifyShow {
+    id: string;
     name: string;
+    episodes?: {
+        items: SpotifyEpisode[];
+        next: string | null;
+    };
 }
-export {};

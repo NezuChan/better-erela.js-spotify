@@ -1,30 +1,24 @@
-import Spotify from "../index";
-import resolver from "../resolver";
-import { SpotifyTrack, UnresolvedSpotifyTrack } from "../typings";
-export class EpisodeManager {
-    public cache: Map<string, UnresolvedSpotifyTrack[]> = new Map();
-    public constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
+import { SearchResult, TrackUtils } from "erela.js";
+import { BaseManager } from "./BaseManager";
 
-    public async fetch(id: string): Promise<{ tracks: UnresolvedSpotifyTrack[] }> {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id)) return { tracks: this.cache.get(id)! };
-            const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/episodes/${id}?market=US`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!data) return { tracks: [] };
-            const track = resolver.buildUnresolved(data);
-            this.cache.set(id, [track]);
-            return { tracks: [track] };
-        }
-        const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/episodes/${id}?market=US`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!data) return { tracks: [] };
-        const track = resolver.buildUnresolved(data);
-        return { tracks: [track] };
+export class EpisodeManager extends BaseManager {
+    public async fetch(id: string, requester: unknown): Promise<SearchResult> {
+        this.checkFromCache(id, requester)!;
+        const episode = await this.resolver.makeRequest<SpotifyEpisode>(`/episode/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        if (episode) {
+            this.cache.set(id, { tracks: [episode] });
+            return this.buildSearch("TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack([TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)]) : [TrackUtils.buildUnresolved(this.buildUnresolved(episode), requester)], undefined, episode.name);
+        } return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
+}
+
+export interface SpotifyEpisode {
+    id: string;
+    name: string;
+    external_urls: {
+        spotify: string;
+    };
+    duration_ms: number;
+    images?: { url: string }[];
+    type: "episode";
 }

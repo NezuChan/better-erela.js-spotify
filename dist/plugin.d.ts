@@ -2,13 +2,24 @@ import { Manager, Plugin } from "erela.js";
 import resolver from "./resolver";
 import { SpotifyOptions } from "./typings";
 export declare class Spotify extends Plugin {
-    options?: SpotifyOptions | undefined;
     readonly resolver: resolver;
     spotifyMatch: RegExp;
     manager: Manager | undefined;
     private _search;
-    private readonly functions;
-    constructor(options?: SpotifyOptions | undefined);
+    options: {
+        clientID?: string | undefined;
+        convertUnresolved: boolean;
+        strategy: string;
+        clientSecret?: string | undefined;
+        clientId?: string | undefined;
+        cacheTrack: boolean;
+        showPageLimit: number;
+        playlistPageLimit: number;
+        albumPageLimit: number;
+        maxCacheLifeTime: number;
+        countryMarket: string;
+    };
+    constructor(options?: SpotifyOptions);
     load(manager: Manager): Promise<void>;
     private search;
 }

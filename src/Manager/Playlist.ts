@@ -1,54 +1,32 @@
-import Spotify from "../index";
-import resolver from "../resolver";
-import { Playlist, PlaylistTracks, UnresolvedSpotifyTrack } from "../typings";
-export class PlaylistManager {
-    public cache: Map<string, PlaylistCache> = new Map();
-    public constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
+import { SearchResult, TrackUtils } from "erela.js";
+import { SpotifyTrack } from "../typings";
+import { BaseManager } from "./BaseManager";
 
-    public async fetch(id: string): Promise<PlaylistCache> {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id)) return this.cache.get(id)!;
-            const playlist = await this.plugin.resolver.makeRequest<Playlist>(`/playlists/${id}`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!playlist.tracks) return { tracks: [], name: undefined! };
-            const tracks = playlist.tracks.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track));
-            let next = playlist.tracks.next; let page = 1;
-
-            /* eslint no-negated-condition: "off" */
-            while (next && (!this.plugin.options.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
-                const nextPage = await this.plugin.resolver.makeRequest<PlaylistTracks>(next.split("v1")[1]);
-                tracks.push(...nextPage.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track)));
-                next = nextPage.next;
+export class PlaylistManager extends BaseManager {
+    public async fetch(id: string, requester: unknown): Promise<SearchResult> {
+        this.checkFromCache(id, requester)!;
+        const playlist = await this.resolver.makeRequest<spotifyPlaylist>(`/playlists/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        if (playlist && playlist.tracks.items.filter(x => x.track !== null).length) {
+            let page = 1;
+            while (playlist.tracks.next && (!this.resolver.plugin.options.playlistPageLimit ? true : page < this.resolver.plugin.options.playlistPageLimit)) {
+                const tracks = await this.resolver.makeRequest<spotifyPlaylist["tracks"]>(playlist.tracks.next);
                 page++;
+                if (tracks && tracks.items) {
+                    playlist.tracks.next = tracks.next;
+                    playlist.tracks.items.push(...tracks.items);
+                } else { playlist.tracks.next = null; }
             }
-            this.cache.set(id, { tracks, name: playlist.name });
-            return { tracks, name: playlist.name };
-        }
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        const playlist = await this.plugin.resolver.makeRequest<Playlist>(`/playlists/${id}`);
-        if (!playlist.tracks) return { tracks: [], name: undefined! };
-        const tracks = playlist.tracks.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track));
-        let next = playlist.tracks.next; let page = 1;
-
-        /* eslint no-negated-condition: "off" */
-        while (next && (!this.plugin.options?.playlistPageLimit ? true : page < this.plugin.options.playlistPageLimit)) {
-            const nextPage = await this.plugin.resolver.makeRequest<PlaylistTracks>(next.split("v1")[1]);
-            tracks.push(...nextPage.items.filter(x => x.track).filter(x => x.track.name).map(item => resolver.buildUnresolved(item.track)));
-            next = nextPage.next;
-            page++;
-        }
-
-        return { tracks, name: playlist.name };
+            this.cache.set(id, { tracks: playlist.tracks.items.filter(x => x.track).map(x => x.track!), name: playlist.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(playlist.tracks.items.filter(x => x.track !== null).map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item.track!), requester))) : playlist.tracks.items.filter(x => x.track !== null).map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item.track!), requester)), undefined, playlist.name);
+        } return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 
-interface PlaylistCache {
-    tracks: UnresolvedSpotifyTrack[];
+export interface spotifyPlaylist {
+    id: string;
     name: string;
+    tracks: {
+        items: { track: SpotifyTrack | null }[];
+        next: string | null;
+    };
 }

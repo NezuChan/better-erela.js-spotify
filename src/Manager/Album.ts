@@ -1,52 +1,32 @@
-import Spotify from "../index";
-import resolver from "../resolver";
-import { Album, UnresolvedSpotifyTrack } from "../typings";
-export class AlbumManager {
-    public cache: Map<string, AlbumCache> = new Map();
-    public constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
+import { SearchResult, TrackUtils } from "erela.js";
+import { SpotifyTrack } from "../typings";
+import { BaseManager } from "./BaseManager";
 
-    public async fetch(id: string): Promise<AlbumCache> {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id)) return this.cache.get(id)!;
-            const album = await this.plugin.resolver.makeRequest<Album>(`/albums/${id}`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!album.tracks) return { tracks: [], name: undefined! };
-            const tracks = album.tracks.items.map(item => resolver.buildUnresolved(item));
-            let next = album.tracks.next; let page = 1;
-
-            /* eslint no-negated-condition: "off" */
-            while (next && (!this.plugin.options.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
-                const nextPage = await this.plugin.resolver.makeRequest<Album>(next.split("v1")[1]);
-                tracks.push(...nextPage.tracks.items.map(item => resolver.buildUnresolved(item)));
-                next = nextPage.tracks.next;
+export class AlbumManager extends BaseManager {
+    public async fetch(id: string, requester: unknown): Promise<SearchResult> {
+        this.checkFromCache(id, requester)!;
+        const album = await this.resolver.makeRequest<SpotifyAlbum>(`/albums/${id}`);
+        if (album && album.tracks) {
+            let page = 1;
+            while (album.tracks.next && (!this.resolver.plugin.options.albumPageLimit ? true : page < this.resolver.plugin.options.albumPageLimit)) {
+                const tracks = await this.resolver.makeRequest<SpotifyAlbum["tracks"]>(album.tracks.next);
                 page++;
+                if (tracks && tracks.items) {
+                    album.tracks.next = tracks.next;
+                    album.tracks.items.push(...tracks.items);
+                } else { album.tracks.next = null; }
             }
-            this.cache.set(id, { tracks, name: album.name });
-            return { tracks, name: album.name };
-        }
-        const album = await this.plugin.resolver.makeRequest<Album>(`/albums/${id}`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!album.tracks) return { tracks: [], name: undefined! };
-        const tracks = album.tracks.items.map(item => resolver.buildUnresolved(item));
-        let next = album.tracks.next; let page = 1;
-
-        while (next && (!this.plugin.options?.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
-            const nextPage = await this.plugin.resolver.makeRequest<Album>(next.split("v1")[1]);
-            tracks.push(...nextPage.tracks.items.map(item => resolver.buildUnresolved(item)));
-            next = nextPage.tracks.next;
-            page++;
-        }
-        return { tracks, name: album.name };
+            this.cache.set(id, { tracks: album.tracks.items, name: album.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(album.tracks.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : album.tracks.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, album.name);
+        } return this.buildSearch("NO_MATCHES", undefined, "ALBUM_NOT_FOUND", undefined);
     }
 }
 
-interface AlbumCache {
-    tracks: UnresolvedSpotifyTrack[];
+export interface SpotifyAlbum {
+    id: string;
     name: string;
+    tracks?: {
+        items: SpotifyTrack[];
+        next: string | null;
+    };
 }

@@ -1,33 +1,13 @@
-import Spotify from "../index";
-import resolver from "../resolver";
-import { SpotifyTrack, UnresolvedSpotifyTrack } from "../typings";
-export class TrackManager {
-    public cache: Map<string, UnresolvedSpotifyTrack[]> = new Map();
-    public constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
-
-    public async fetch(id: string): Promise<{ tracks: UnresolvedSpotifyTrack[] }> {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id)) return { tracks: this.cache.get(id)! };
-            const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/tracks/${id}`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!data) return { tracks: [] };
-
-            const track = resolver.buildUnresolved(data);
-            this.cache.set(id, [track]);
-            return { tracks: [track] };
-        }
-
-        const data = await this.plugin.resolver.makeRequest<SpotifyTrack>(`/tracks/${id}`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!data) return { tracks: [] };
-        const track = resolver.buildUnresolved(data);
-        this.cache.set(id, [track]);
-        return { tracks: [track] };
+import { SearchResult, TrackUtils } from "erela.js";
+import { SpotifyTrack } from "../typings";
+import { BaseManager } from "./BaseManager";
+export class TrackManager extends BaseManager {
+    public async fetch(id: string, requester: unknown): Promise<SearchResult> {
+        this.checkFromCache(id, requester)!;
+        const track = await this.resolver.makeRequest<SpotifyTrack>(`/tracks/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        if (track) {
+            this.cache.set(id, { tracks: [track] });
+            return this.buildSearch("TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack([TrackUtils.buildUnresolved(this.buildUnresolved(track), requester)]) : [TrackUtils.buildUnresolved(this.buildUnresolved(track), requester)], undefined, track.name);
+        } return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }

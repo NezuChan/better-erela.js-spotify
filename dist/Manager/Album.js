@@ -1,55 +1,29 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AlbumManager = void 0;
-const resolver_1 = __importDefault(require("../resolver"));
-class AlbumManager {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.cache = new Map();
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
-    async fetch(id) {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id))
-                return this.cache.get(id);
-            const album = await this.plugin.resolver.makeRequest(`/albums/${id}`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!album.tracks)
-                return { tracks: [], name: undefined };
-            const tracks = album.tracks.items.map(item => resolver_1.default.buildUnresolved(item));
-            let next = album.tracks.next;
+const erela_js_1 = require("erela.js");
+const BaseManager_1 = require("./BaseManager");
+class AlbumManager extends BaseManager_1.BaseManager {
+    async fetch(id, requester) {
+        this.checkFromCache(id, requester);
+        const album = await this.resolver.makeRequest(`/albums/${id}`);
+        if (album && album.tracks) {
             let page = 1;
-            /* eslint no-negated-condition: "off" */
-            while (next && (!this.plugin.options.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
-                const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                tracks.push(...nextPage.tracks.items.map(item => resolver_1.default.buildUnresolved(item)));
-                next = nextPage.tracks.next;
+            while (album.tracks.next && (!this.resolver.plugin.options?.albumPageLimit ? true : page < this.resolver.plugin.options.albumPageLimit)) {
+                const tracks = await this.resolver.makeRequest(album.tracks.next);
                 page++;
+                if (tracks && tracks.items) {
+                    album.tracks.next = tracks.next;
+                    album.tracks.items.push(...tracks.items);
+                }
+                else
+                    album.tracks.next = null;
             }
-            this.cache.set(id, { tracks, name: album.name });
-            return { tracks, name: album.name };
+            this.cache.set(id, { tracks: album.tracks.items, name: album.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(album.tracks.items.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : album.tracks.items.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, album.name);
         }
-        const album = await this.plugin.resolver.makeRequest(`/albums/${id}`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!album.tracks)
-            return { tracks: [], name: undefined };
-        const tracks = album.tracks.items.map(item => resolver_1.default.buildUnresolved(item));
-        let next = album.tracks.next;
-        let page = 1;
-        while (next && (!this.plugin.options?.albumPageLimit ? true : page < this.plugin.options.albumPageLimit)) {
-            const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-            tracks.push(...nextPage.tracks.items.map(item => resolver_1.default.buildUnresolved(item)));
-            next = nextPage.tracks.next;
-            page++;
-        }
-        return { tracks, name: album.name };
+        else
+            return this.buildSearch("NO_MATCHES", undefined, "ALBUM_NOT_FOUND", undefined);
     }
 }
 exports.AlbumManager = AlbumManager;

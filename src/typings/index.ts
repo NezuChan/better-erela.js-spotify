@@ -29,15 +29,26 @@ export interface ArtistsEntity {
 }
 
 export interface SpotifyOptions {
+    /** @deprecated Please use `clientId` instead, **this is backward compability for erela.js-spotify user.** */
+    clientID: string;
+    /** @default false */
     convertUnresolved?: boolean;
+    /** @default SCRAPE */
     strategy?: Strategy;
     clientSecret?: string;
     clientId?: string;
+    /** @default true */
     cacheTrack?: boolean;
+    /** @default 10 */
     showPageLimit?: number;
+    /** @default 10 */
     playlistPageLimit?: number;
+    /** @default 10 */
     albumPageLimit?: number;
+    /** @default 360000 */
     maxCacheLifeTime?: number;
+    /** @default US */
+    countryMarket?: string;
 }
 
 export interface Playlist {
@@ -82,7 +93,7 @@ export interface UnresolvedSpotifyTrack {
     uri: string;
     thumbnail: string | null;
 }
-export type Strategy = "SCRAPE" | "API";
+export type Strategy = "API" | "SCRAPE";
 
 export interface SpotifyTrack {
     artists: ArtistsEntity[];
@@ -91,10 +102,11 @@ export interface SpotifyTrack {
     external_urls: {
         spotify: string;
     };
-    images: spotifyThumbnail[];
+    images?: spotifyThumbnail[];
     album: {
         images: spotifyThumbnail[];
     };
+    type: "track";
 }
 
 export interface spotifyThumbnail {

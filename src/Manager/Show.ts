@@ -1,52 +1,33 @@
-import Spotify from "../index";
-import resolver from "../resolver";
-import { Show, ShowTracks, UnresolvedSpotifyTrack } from "../typings";
-export class ShowManager {
-    public cache: Map<string, ShowCache> = new Map();
-    public constructor(public plugin: Spotify) {
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
+import { SearchResult, TrackUtils } from "erela.js";
+import { SpotifyTrack } from "../typings";
+import { BaseManager } from "./BaseManager";
+import { SpotifyEpisode } from "./Episode";
 
-    public async fetch(id: string): Promise<ShowCache> {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id)) return this.cache.get(id)!;
-            const show = await this.plugin.resolver.makeRequest<Show>(`/shows/${id}?market=US`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!show.episodes) return { tracks: [], name: undefined! };
-
-            const tracks = show.episodes.items.map(item => resolver.buildUnresolved(item));
-            let next = show.episodes.next; let page = 1;
-
-            /* eslint no-negated-condition: "off" */
-            while (next && (!this.plugin.options.showPageLimit! ? true : page < this.plugin.options.showPageLimit)) {
-                const nextPage = await this.plugin.resolver.makeRequest<ShowTracks>(next.split("v1")[1]);
-                tracks.push(...nextPage.items.map(item => resolver.buildUnresolved(item)));
-                next = nextPage.next;
+export class ShowManager extends BaseManager {
+    public async fetch(id: string, requester: unknown): Promise<SearchResult> {
+        this.checkFromCache(id, requester)!;
+        const show = await this.resolver.makeRequest<spotifyShow>(`/shows/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        if (show && show.episodes) {
+            let page = 1;
+            while (show.episodes.next && (!this.resolver.plugin.options.showPageLimit ? true : page < this.resolver.plugin.options.showPageLimit)) {
+                const episodes = await this.resolver.makeRequest<spotifyShow["episodes"]>(show.episodes.next);
                 page++;
+                if (episodes && episodes.items) {
+                    show.episodes.next = episodes.next;
+                    show.episodes.items.push(...episodes.items);
+                } else { show.episodes.next = null; }
             }
-            this.cache.set(id, { tracks, name: show.name });
-            return { tracks, name: show.name };
-        }
-        const show = await this.plugin.resolver.makeRequest<Show>(`/shows/${id}?market=US`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!show.episodes) return { tracks: [], name: undefined! };
-        const tracks = show.episodes.items.map(item => resolver.buildUnresolved(item));
-        let next = show.episodes.next; let page = 1;
-        while (next && (!this.plugin.options?.showPageLimit ? true : page < this.plugin.options.showPageLimit)) {
-            const nextPage = await this.plugin.resolver.makeRequest<ShowTracks>(next.split("v1")[1]);
-            tracks.push(...nextPage.items.map(item => resolver.buildUnresolved(item)));
-            next = nextPage.next;
-            page++;
-        }
-        return { tracks, name: show.name };
+            this.cache.set(id, { tracks: show.episodes.items, name: show.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(show.episodes.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item as unknown as SpotifyTrack), requester))) : show.episodes.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item as unknown as SpotifyTrack), requester)), undefined, show.name);
+        } return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 
-interface ShowCache {
-    tracks: UnresolvedSpotifyTrack[];
+export interface spotifyShow {
+    id: string;
     name: string;
+    episodes?: {
+        items: SpotifyEpisode[];
+        next: string | null;
+    };
 }

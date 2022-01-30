@@ -1,55 +1,29 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ShowManager = void 0;
-const resolver_1 = __importDefault(require("../resolver"));
-class ShowManager {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.cache = new Map();
-        if (plugin.options?.maxCacheLifeTime) {
-            setInterval(() => {
-                this.cache.clear();
-            }, plugin.options.maxCacheLifeTime);
-        }
-    }
-    async fetch(id) {
-        if (this.plugin.options?.cacheTrack) {
-            if (this.cache.has(id))
-                return this.cache.get(id);
-            const show = await this.plugin.resolver.makeRequest(`/shows/${id}?market=US`);
-            /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-            if (!show.episodes)
-                return { tracks: [], name: undefined };
-            const tracks = show.episodes.items.map(item => resolver_1.default.buildUnresolved(item));
-            let next = show.episodes.next;
+const erela_js_1 = require("erela.js");
+const BaseManager_1 = require("./BaseManager");
+class ShowManager extends BaseManager_1.BaseManager {
+    async fetch(id, requester) {
+        this.checkFromCache(id, requester);
+        const show = await this.resolver.makeRequest(`/shows/${id}?market=${this.resolver.plugin.options.countryMarket}`);
+        if (show && show.episodes) {
             let page = 1;
-            /* eslint no-negated-condition: "off" */
-            while (next && (!this.plugin.options.showPageLimit ? true : page < this.plugin.options.showPageLimit)) {
-                const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-                tracks.push(...nextPage.items.map(item => resolver_1.default.buildUnresolved(item)));
-                next = nextPage.next;
+            while (show.episodes.next && (!this.resolver.plugin.options?.showPageLimit ? true : page < this.resolver.plugin.options.showPageLimit)) {
+                const episodes = await this.resolver.makeRequest(show.episodes.next);
                 page++;
+                if (episodes && episodes.items) {
+                    show.episodes.next = episodes.next;
+                    show.episodes.items.push(...episodes.items);
+                }
+                else
+                    show.episodes.next = null;
             }
-            this.cache.set(id, { tracks, name: show.name });
-            return { tracks, name: show.name };
+            this.cache.set(id, { tracks: show.episodes.items, name: show.name });
+            return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(show.episodes.items.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : show.episodes.items.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, show.name);
         }
-        const show = await this.plugin.resolver.makeRequest(`/shows/${id}?market=US`);
-        /* eslint @typescript-eslint/no-unnecessary-condition: "off" */
-        if (!show.episodes)
-            return { tracks: [], name: undefined };
-        const tracks = show.episodes.items.map(item => resolver_1.default.buildUnresolved(item));
-        let next = show.episodes.next;
-        let page = 1;
-        while (next && (!this.plugin.options?.showPageLimit ? true : page < this.plugin.options.showPageLimit)) {
-            const nextPage = await this.plugin.resolver.makeRequest(next.split("v1")[1]);
-            tracks.push(...nextPage.items.map(item => resolver_1.default.buildUnresolved(item)));
-            next = nextPage.next;
-            page++;
-        }
-        return { tracks, name: show.name };
+        else
+            return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
     }
 }
 exports.ShowManager = ShowManager;
