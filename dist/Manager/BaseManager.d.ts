@@ -10,7 +10,7 @@ export declare abstract class BaseManager {
     }>;
     constructor(resolver: resolver);
     abstract fetch(id: string, requester: unknown): Promise<SearchResult>;
-    checkFromCache(id: string, requester: unknown): SearchResult | undefined;
+    checkFromCache(id: string, requester: unknown): Promise<SearchResult | undefined>;
     buildSearch(loadType: LoadType, tracks: UnresolvedTrack[] | undefined, error: string | undefined, name: string | undefined): SearchResult;
     autoResolveTrack(tracks: UnresolvedTrack[]): Promise<UnresolvedTrack[]>;
     buildUnresolved(track: SpotifyEpisode | SpotifyTrack): Omit<UnresolvedTrack, "resolve">;

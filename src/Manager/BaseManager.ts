@@ -10,10 +10,10 @@ export abstract class BaseManager {
 
     public abstract fetch(id: string, requester: unknown): Promise<SearchResult>;
 
-    public checkFromCache(id: string, requester: unknown): SearchResult | undefined {
+    public async checkFromCache(id: string, requester: unknown): Promise<SearchResult | undefined> {
         if (this.cache.has(id) && this.resolver.plugin.options.cacheTrack) {
             const track = this.cache.get(id)!;
-            return this.buildSearch(track.name ? "PLAYLIST_LOADED" : "TRACK_LOADED", track.tracks.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, track.name);
+            return this.buildSearch(track.name ? "PLAYLIST_LOADED" : "TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(track.tracks.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : track.tracks.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, track.name);
         }
     }
 

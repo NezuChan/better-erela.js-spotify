@@ -4,7 +4,7 @@ import { BaseManager } from "./BaseManager";
 
 export class AlbumManager extends BaseManager {
     public async fetch(id: string, requester: unknown): Promise<SearchResult> {
-        this.checkFromCache(id, requester)!;
+        await this.checkFromCache(id, requester)!;
         const album = await this.resolver.makeRequest<SpotifyAlbum>(`/albums/${id}`);
         if (album && album.tracks) {
             let page = 1;
@@ -18,7 +18,7 @@ export class AlbumManager extends BaseManager {
             }
             this.cache.set(id, { tracks: album.tracks.items, name: album.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(album.tracks.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : album.tracks.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, album.name);
-        } return this.buildSearch("NO_MATCHES", undefined, "ALBUM_NOT_FOUND", undefined);
+        } return this.buildSearch("NO_MATCHES", undefined, "Could not find any suitable track(s), unexpected spotify response", undefined);
     }
 }
 

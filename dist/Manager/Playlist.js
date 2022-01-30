@@ -5,7 +5,7 @@ const erela_js_1 = require("erela.js");
 const BaseManager_1 = require("./BaseManager");
 class PlaylistManager extends BaseManager_1.BaseManager {
     async fetch(id, requester) {
-        this.checkFromCache(id, requester);
+        await this.checkFromCache(id, requester);
         const playlist = await this.resolver.makeRequest(`/playlists/${id}?market=${this.resolver.plugin.options.countryMarket}`);
         if (playlist && playlist.tracks.items.filter(x => x.track !== null).length) {
             let page = 1;
@@ -23,7 +23,7 @@ class PlaylistManager extends BaseManager_1.BaseManager {
             this.cache.set(id, { tracks: playlist.tracks.items.filter(x => x.track).map(x => x.track), name: playlist.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(playlist.tracks.items.filter(x => x.track !== null).map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item.track), requester))) : playlist.tracks.items.filter(x => x.track !== null).map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item.track), requester)), undefined, playlist.name);
         }
-        return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        return this.buildSearch("NO_MATCHES", undefined, "Could not find any suitable track(s), unexpected spotify response", undefined);
     }
 }
 exports.PlaylistManager = PlaylistManager;

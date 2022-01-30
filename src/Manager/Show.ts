@@ -5,7 +5,7 @@ import { SpotifyEpisode } from "./Episode";
 
 export class ShowManager extends BaseManager {
     public async fetch(id: string, requester: unknown): Promise<SearchResult> {
-        this.checkFromCache(id, requester)!;
+        await this.checkFromCache(id, requester)!;
         const show = await this.resolver.makeRequest<spotifyShow>(`/shows/${id}?market=${this.resolver.plugin.options.countryMarket}`);
         if (show && show.episodes) {
             let page = 1;
@@ -19,7 +19,7 @@ export class ShowManager extends BaseManager {
             }
             this.cache.set(id, { tracks: show.episodes.items, name: show.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(show.episodes.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item as unknown as SpotifyTrack), requester))) : show.episodes.items.map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item as unknown as SpotifyTrack), requester)), undefined, show.name);
-        } return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        } return this.buildSearch("NO_MATCHES", undefined, "Could not find any suitable track(s), unexpected spotify response", undefined);
     }
 }
 

@@ -5,14 +5,14 @@ const erela_js_1 = require("erela.js");
 const BaseManager_1 = require("./BaseManager");
 class ArtistManager extends BaseManager_1.BaseManager {
     async fetch(id, requester) {
-        this.checkFromCache(id, requester);
+        await this.checkFromCache(id, requester);
         const artistTracks = await this.resolver.makeRequest(`/artists/${id}/top-tracks?market=${this.resolver.plugin.options.countryMarket}`);
         const artistInfo = await this.resolver.makeRequest(`/artists/${id}`);
         if (artistInfo && artistTracks) {
             this.cache.set(id, { tracks: artistTracks.tracks, name: artistInfo.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(artistTracks.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : artistTracks.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, artistInfo.name);
         }
-        return this.buildSearch("NO_MATCHES", undefined, "TRACK_NOT_FOUND", undefined);
+        return this.buildSearch("NO_MATCHES", undefined, "Could not find any suitable track(s), unexpected spotify response", undefined);
     }
 }
 exports.ArtistManager = ArtistManager;

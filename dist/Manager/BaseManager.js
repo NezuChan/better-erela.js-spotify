@@ -7,10 +7,10 @@ class BaseManager {
         this.resolver = resolver;
         this.cache = new Map();
     }
-    checkFromCache(id, requester) {
+    async checkFromCache(id, requester) {
         if (this.cache.has(id) && this.resolver.plugin.options.cacheTrack) {
             const track = this.cache.get(id);
-            return this.buildSearch(track.name ? "PLAYLIST_LOADED" : "TRACK_LOADED", track.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, track.name);
+            return this.buildSearch(track.name ? "PLAYLIST_LOADED" : "TRACK_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(track.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : track.tracks.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, track.name);
         }
     }
     buildSearch(loadType, tracks, error, name) {
