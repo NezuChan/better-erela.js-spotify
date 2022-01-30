@@ -32,7 +32,7 @@
     "docs": "typedoc",
     "lint": "eslint src/**/**.ts --ignore-path .gitignore",
     "lint:fix": "eslint src/**/**.ts --ignore-path .gitignore --fix",
-    "test": "jest"
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
     "erela.js": "^2.3.3",
