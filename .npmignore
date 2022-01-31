@@ -8,3 +8,7 @@ docs
 .github
 typedoc.json
 test.js
+renovate.json
+babel.config.js
+jest.config.ts
+coverage
