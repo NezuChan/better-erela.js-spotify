@@ -22,8 +22,8 @@ const check = (options) => {
     }
     if (typeof options?.strategy !== "undefined" &&
         options.strategy === "API" &&
-        (!options.clientId || !options.clientID)) {
-        throw new TypeError("Spotify option \"clientId\" or \"clientID\"required if strategy set to API.");
+        (!options.clientId || (!options.clientID && !options.clientId))) {
+        throw new TypeError("Spotify option \"clientId\" or \"clientID\" required if strategy set to API.");
     }
     if (typeof options?.playlistPageLimit !== "undefined" &&
         typeof options.playlistPageLimit !== "number") {
