@@ -19,7 +19,7 @@ test("Spotify album with scrape strategy", (done) => {
             new Spotify()
         ]
     });
-    manager.search("https://open.spotify.com/album/0FOOodYRlj7gzh7q7IjmNZ").then(x => {
+    manager.search("https://open.spotify.com/album/5ZxEBTl8KlJ2AEC1dxNTMY").then(x => {
         expect(x.loadType).toBe("PLAYLIST_LOADED");
         done();
     }).catch(e => expect(e).toMatch('error'));
