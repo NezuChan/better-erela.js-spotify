@@ -39,14 +39,16 @@ class BaseManager {
                 title: track.name,
                 duration: track.duration_ms,
                 thumbnail: track.images[0].url,
-                uri: track.external_urls.spotify
+                uri: track.external_urls.spotify,
+                author: " "
             };
         }
         return {
             title: track.name,
             duration: track.duration_ms,
             thumbnail: track.album?.images[0].url ?? null,
-            uri: track.external_urls.spotify
+            uri: track.external_urls.spotify,
+            author: Array.isArray(track.artists) ? track.artists.map(artist => artist.name).join(", ") : " "
         };
     }
 }
