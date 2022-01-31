@@ -13,6 +13,7 @@ class resolver {
             album: new Manager_1.AlbumManager(this),
             artist: new Manager_1.ArtistManager(this)
         };
+        this.token = undefined;
         this.BASE_URL = "https://api.spotify.com/v1";
     }
     async makeRequest(endpoint) {
@@ -20,13 +21,17 @@ class resolver {
             if (!this.token)
                 await this.renew();
             const req = await (0, undici_1.fetch)(endpoint.startsWith("http") ? endpoint : `${this.BASE_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, { headers: { Authorization: this.token } });
+            if ([401].includes(req.status)) {
+                await this.renew();
+                return await this.makeRequest(endpoint);
+            }
             return await req.json();
         }
         catch (_e) {
             return null;
         }
     }
-    async renewToken() {
+    async getToken() {
         const response = await (0, undici_1.fetch)("https://accounts.spotify.com/api/token?grant_type=client_credentials", {
             method: "POST",
             headers: {
@@ -41,7 +46,7 @@ class resolver {
         this.token = `Bearer ${access_token}`;
         return expires_in * 1000;
     }
-    async getSelfToken() {
+    async fetchAccessToken() {
         const response = await (0, undici_1.fetch)("https://open.spotify.com/get_access_token?reason=transport&productType=embed", { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59" } });
         const { accessToken, accessTokenExpirationTimestampMs } = await response.json();
         if (!accessToken)
@@ -51,12 +56,10 @@ class resolver {
     }
     async renew() {
         if (this.plugin.options.strategy === "API") {
-            const lastRenew = await this.renewToken();
-            setTimeout(() => this.renew(), lastRenew);
+            await this.getToken();
         }
         else {
-            const lastRenew = await this.getSelfToken();
-            setTimeout(() => this.renew(), lastRenew);
+            await this.fetchAccessToken();
         }
     }
 }

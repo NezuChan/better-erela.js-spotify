@@ -11,10 +11,10 @@ export default class resolver {
         album: AlbumManager;
         artist: ArtistManager;
     };
-    token: string;
+    token: string | undefined;
     BASE_URL: string;
     makeRequest<T>(endpoint: string): Promise<T | null>;
-    renewToken(): Promise<number>;
-    getSelfToken(): Promise<number>;
+    getToken(): Promise<number>;
+    fetchAccessToken(): Promise<number>;
     renew(): Promise<void>;
 }
