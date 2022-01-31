@@ -38,10 +38,10 @@ const check = (options?: SpotifyOptions): void => {
     if (
         typeof options?.strategy !== "undefined" &&
         options.strategy === "API" &&
-        (!options.clientId || !options.clientID)
+        (!options.clientId || (!options.clientID && !options.clientId))
     ) {
         throw new TypeError(
-            "Spotify option \"clientId\" or \"clientID\"required if strategy set to API."
+            "Spotify option \"clientId\" or \"clientID\" required if strategy set to API."
         );
     }
     if (
