@@ -20,7 +20,8 @@ class AlbumManager extends BaseManager_1.BaseManager {
                     album.tracks.next = null;
                 }
             }
-            this.cache.set(id, { tracks: album.tracks.items, name: album.name });
+            if (this.resolver.plugin.options.cacheTrack)
+                this.cache.set(id, { tracks: album.tracks.items, name: album.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(album.tracks.items.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester))) : album.tracks.items.map(item => erela_js_1.TrackUtils.buildUnresolved(this.buildUnresolved(item), requester)), undefined, album.name);
         }
         return this.buildSearch("NO_MATCHES", undefined, "Could not find any suitable track(s), unexpected spotify response", undefined);
