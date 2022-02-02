@@ -114,8 +114,15 @@ export class Spotify extends Plugin {
         }
         try {
             await this.resolver.renew();
-        } catch (e) {
-            console.error("Failed to renew Spotify token:", e);
+        } catch (_e) {
+            console.log("Failed to renew Spotify token, dont open issue about this. retrying in 10 seconds.");
+            setTimeout(async () => {
+                try {
+                    await this.resolver.renew();
+                } catch (e) {
+                    console.error(`Failed to renew Spotify token: ${e}, please report this to maintainer`);
+                }
+            }, 10_000);
         }
     }
 
