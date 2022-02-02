@@ -16,7 +16,7 @@ export class PlaylistManager extends BaseManager {
                     playlist.tracks.items.push(...tracks.items);
                 } else { playlist.tracks.next = null; }
             }
-            this.cache.set(id, { tracks: playlist.tracks.items.filter(x => x.track).map(x => x.track!), name: playlist.name });
+            if (this.resolver.plugin.options.cacheTrack) this.cache.set(id, { tracks: playlist.tracks.items.filter(x => x.track).map(x => x.track!), name: playlist.name });
             return this.buildSearch("PLAYLIST_LOADED", this.resolver.plugin.options.convertUnresolved ? await this.autoResolveTrack(playlist.tracks.items.filter(x => x.track !== null).map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item.track!), requester))) : playlist.tracks.items.filter(x => x.track !== null).map(item => TrackUtils.buildUnresolved(this.buildUnresolved(item.track!), requester)), undefined, playlist.name);
         } return this.buildSearch("NO_MATCHES", undefined, "Could not find any suitable track(s), unexpected spotify response", undefined);
     }
