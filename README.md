@@ -1,16 +1,18 @@
 
-# better-erela.js-spotify
- A erela.js spotify plugin, but more better.
+# shitty-erela.js-spotify 
+A erela.js spotify plugin, but more shitty. they said 👀
 
-*Being used in production by NezukoChan (Different library but still same usage)
-
-[![Kamado Community](https://discordapp.com/api/guilds/785715968608567297/embed.png?style=banner2)](https://discord.gg/8hmbMUCVMD)
+[![NezukoChan Tavern](https://discordapp.com/api/guilds/785715968608567297/embed.png?style=banner2)](https://discord.gg/8hmbMUCVMD)
 
 ## Features
  - Support both api and scrape strategy
  - Track caching
  - Full coverage of spotify api, load track from show, episode, album, and artist
  - Lightweight
+ - Shit
+ - Shitty
+ - And more shit 😅
+
 ## Requirements
  - Node.JS 14.x
  - Erela.JS 2.3.3
