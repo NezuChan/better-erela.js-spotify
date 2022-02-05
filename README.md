@@ -1,5 +1,5 @@
 
-# shitty-erela.js-spotify 
+# better-erela.js-spotify 
 A erela.js spotify plugin, but more shitty. they said 👀
 
 [![NezukoChan Tavern](https://discordapp.com/api/guilds/785715968608567297/embed.png?style=banner2)](https://discord.gg/8hmbMUCVMD)
@@ -9,9 +9,6 @@ A erela.js spotify plugin, but more shitty. they said 👀
  - Track caching
  - Full coverage of spotify api, load track from show, episode, album, and artist
  - Lightweight
- - Shit
- - Shitty
- - And more shit 😅
 
 ## Requirements
  - Node.JS 14.x
