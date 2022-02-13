@@ -8,13 +8,6 @@ test("Spotify playlist with scrape strategy", (done) => {
         send: () => {
     
         },
-        nodes: [
-            {
-                host: "lava.link",
-                password: "youshallnotpass",
-                port: 80
-            }
-        ],
         plugins: [
             new Spotify()
         ]

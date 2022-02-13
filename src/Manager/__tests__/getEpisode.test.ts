@@ -8,19 +8,12 @@ test("Spotify track with scrape strategy", (done) => {
         send: () => {
     
         },
-        nodes: [
-            {
-                host: "lava.link",
-                password: "youshallnotpass",
-                port: 80
-            }
-        ],
         plugins: [
             new Spotify()
         ]
     });
-    manager.search("https://open.spotify.com/episode/72L7G1DKMiMdJuNpY6WRZf").then(x => {
-        expect(x.loadType).toBe("TRACK_LOADED");
+    manager.search("https://open.spotify.com/episode/5eeZpC35QkgNl3EZN5a8S1").then(x => {
+        expect(x.loadType).toContain("TRACK_LOADED");
         done();
-    }).catch(e => expect(e).toMatch('error'));
+    })
 })
