@@ -4,6 +4,9 @@ export declare class EpisodeManager extends BaseManager {
     fetch(id: string, requester: unknown): Promise<SearchResult>;
 }
 export interface SpotifyEpisode {
+    error?: {
+        message: string;
+    };
     id: string;
     name: string;
     external_urls: {
