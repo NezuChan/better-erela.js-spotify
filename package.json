@@ -13,11 +13,11 @@
     "@typescript-eslint/eslint-plugin": "5.27.0",
     "@typescript-eslint/parser": "5.27.0",
     "babel-jest": "28.1.0",
-    "eslint": "8.16.0",
+    "eslint": "8.17.0",
     "jest": "28.1.0",
     "rimraf": "3.0.2",
-    "ts-node": "10.8.0",
-    "typescript": "4.7.2"
+    "ts-node": "10.8.1",
+    "typescript": "4.7.3"
   },
   "license": "MIT",
   "author": {
