@@ -1,3 +1,2 @@
 export { Spotify } from "./plugin";
-export = Spotify;
-export default Spotify;
+export { Spotify as default } from "./plugin";
