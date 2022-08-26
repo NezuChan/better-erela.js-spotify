@@ -20,7 +20,7 @@ jobs:
       - name: Installing dependencies
         run: | 
            yarn install
-           yarn add typedoc
+           yarn add typedoc erela.js
       - name: Generating docs
         run: yarn docs
       - name: Force add docs
