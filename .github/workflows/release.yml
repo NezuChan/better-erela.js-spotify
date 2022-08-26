@@ -17,6 +17,8 @@ jobs:
           git checkout main
       - name: Installing dependencies
         run: yarn install --frozen-lockfile
+      - name: Install ErelaJS
+        run: yarn add erela.js
       - name: Compile source
         run: yarn compile
       - name: Publish source

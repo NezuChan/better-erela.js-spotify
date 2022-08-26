@@ -11,5 +11,7 @@ jobs:
           node-version: "16"
     - name: Install modules
       run: yarn
+    - name: Install ErelaJS
+      run: yarn add erela.js
     - name: Run tests
       run: yarn test
