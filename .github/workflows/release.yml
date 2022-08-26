@@ -21,6 +21,8 @@ jobs:
         run: yarn add erela.js
       - name: Compile source
         run: yarn compile
+      - name: Remove ErelaJS
+        run: yarn remove erela.js
       - name: Publish source
         run: |
           npm publish --access public || true
