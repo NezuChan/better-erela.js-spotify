@@ -35,7 +35,6 @@
     "test": "jest --detectOpenHandles --forceExit"
   },
   "dependencies": {
-    "erela.js": "latest",
     "undici": "^5.6.0"
   },
   "eslintConfig": {
